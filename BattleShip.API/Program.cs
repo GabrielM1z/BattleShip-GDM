@@ -1,4 +1,10 @@
+using BattleShip.API.Service; // Assure-toi que le chemin d'importation est correct
+using BattleShip.Models;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Ajoute le service GridService au conteneur DI
+builder.Services.AddSingleton<GridService>();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -16,26 +22,27 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-/// Route Hello World
+// Route Hello World
 app.MapGet("/", () => "Hello World")
 .WithOpenApi();
 
 
-/// Route creation 
-app.MapGet("/createGrid", () => {
-    
-    // Générer deux matrices 10x10
-    int[,] matrix1 = GenerateMatrix(10, 10);
-    int[,] matrix2 = GenerateMatrix(10, 10);
+// Route pour générer deux grilles
+app.MapGet("/generateGrid", (GridService gridService) =>
+{
+    // Création de la grille pour le joueur 1
+    Grid gridJ1 = gridService.CreateGrid();
+    char[][] gridArrayJ1 = gridService.GetGridArray(gridJ1); // Conversion de la grille en tableau de tableaux
 
-    var result = new {
-        Matrix1 = matrix1,
-        Matrix2 = matrix2
-    };
+    // Création de la grille pour le joueur 2
+    Grid gridJ2 = gridService.CreateGrid();
+    char[][] gridArrayJ2 = gridService.GetGridArray(gridJ2); // Conversion de la grille en tableau de tableaux
 
-    return Results.Json(result);
+    // Retourne les grilles sous forme de JSON
+    return Results.Ok(new { gridJ1 = gridArrayJ1, gridJ2 = gridArrayJ2 });
 })
 .WithOpenApi();
 
-app.Run();
 
+
+app.Run();
