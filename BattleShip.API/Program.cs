@@ -20,5 +20,22 @@ app.UseHttpsRedirection();
 app.MapGet("/", () => "Hello World")
 .WithOpenApi();
 
+
+/// Route creation 
+app.MapGet("/createGrid", () => {
+    
+    // Générer deux matrices 10x10
+    int[,] matrix1 = GenerateMatrix(10, 10);
+    int[,] matrix2 = GenerateMatrix(10, 10);
+
+    var result = new {
+        Matrix1 = matrix1,
+        Matrix2 = matrix2
+    };
+
+    return Results.Json(result);
+})
+.WithOpenApi();
+
 app.Run();
 
