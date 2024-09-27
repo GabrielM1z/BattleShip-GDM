@@ -8,7 +8,7 @@ namespace BattleShip.API.Service
         
         public Grid CreateGrid()
         {
-            var grid = new Grid(6); // Crée une grille de 10x10
+            var grid = new Grid(10); // Crée une grille de 10x10
             InitializeGrid(grid);
             PlaceBoat(grid);
             return grid;
@@ -68,21 +68,21 @@ namespace BattleShip.API.Service
         }
 
         public bool?[][] GetBoolGridArray(bool?[,] grid)
+    {
+        // Conversion de la matrice 2D en tableau de tableaux
+        bool?[][] gridArray = new bool?[grid.GetLength(0)][];
+
+        for (int i = 0; i < grid.GetLength(0); i++)
         {
-            // Conversion de la matrice 2D en tableau de tableaux
-            bool?[][] gridArray = new bool?[grid.GetLength(0)][];
-
-            for (int i = 0; i < grid.GetLength(0); i++)
+            gridArray[i] = new bool?[grid.GetLength(1)];
+            for (int j = 0; j < grid.GetLength(1); j++)
             {
-                gridArray[i] = new bool?[grid.GetLength(1)];
-                for (int j = 0; j < grid.GetLength(1); j++)
-                {
-                    gridArray[i][j] = grid[i, j];
-                }
+                gridArray[i][j] = grid[i, j];
             }
-
-            return gridArray;
         }
+
+        return gridArray;
+    }
 
 
         
