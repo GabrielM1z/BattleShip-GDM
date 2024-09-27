@@ -1,5 +1,5 @@
 using System.Reflection.Metadata.Ecma335;
-using BattleShip.API.Service; // Assure-toi que le chemin d'importation est correct
+using BattleShip.API.Service;
 using BattleShip.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,6 +15,10 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+char[][] gridArrayJ1 = null;
+char[][] gridArrayJ2 = null;
+bool?[,] maskgridJ2 = null;
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -24,31 +28,36 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Route Hello World
 app.MapGet("/", () => "Hello World")
 .WithOpenApi();
 
-char[][] gridArrayJ1 = null;
-char[][] gridArrayJ2 = null;
-
+// Route pour start la game
 app.MapGet("/start", (GridService gridService) =>
 {
-    // Création de la grille pour le joueur 1
-    Grid gridJ1 = gridService.CreateGrid();
-    gridArrayJ1 = gridService.GetGridArray(gridJ1); // Conversion de la grille en tableau de tableaux
+    var gameId = Guid.NewGuid();
 
-    // Impression de la grille J1 dans la console
+    Grid gridJ1 = gridService.CreateGrid();
+    gridArrayJ1 = gridService.GetGridArray(gridJ1);
+
+
     gridService.PrintGrid(gridArrayJ1, "gridJ1");
 
-    // Création de la grille pour le joueur 2
     Grid gridJ2 = gridService.CreateGrid();
-    gridArrayJ2 = gridService.GetGridArray(gridJ2); // Conversion de la grille en tableau de tableaux
+    gridArrayJ2 = gridService.GetGridArray(gridJ2);
+    maskgridJ2 = gridService.MaskedGrid(gridJ2);
+    bool?[][] gridArray = gridService.GetBoolGridArray(maskgridJ2);
 
-    // Impression de la grille J2 dans la console
     gridService.PrintGrid(gridArrayJ2, "gridJ2");
 
-    // Retourne les grilles sous forme de JSON
-    return Results.Ok(new { gridJ1 = gridArrayJ1, gridJ2 = gridArrayJ2 });
+    var game = new Game
+    {
+        Id = gameId,
+        GridJ1 = gridArrayJ1,
+        GridJ2 = gridArrayJ2,
+        MaskedGridJ2 = gridArray,
+    };
+
+    return Results.Ok(game);
 })
 .WithOpenApi();
 
@@ -58,7 +67,7 @@ app.MapPost("/shoot", (GridService gridService, [FromBody] ShootRequest request)
     Console.WriteLine("shoot call");
     
     var shootResultJ1 = gridService.PlayerShoot(gridArrayJ2, request.X, request.Y);
-    gridService.PrintGrid(gridArrayJ2, "gridJ2");
+    gridService.PrintGrid(gridArrayJ2, "Grille jouée");
     // Logique pour vérifier si le jeu est terminé
     if (shootResultJ1.IsHit && gridService.IsGameFinished(gridArrayJ2)){
         return Results.Ok(new { message = "Le joueur 1 a gagné !" });
@@ -78,4 +87,5 @@ public class ShootRequest
 {
     public int X { get; set; } // Coordonnée X du tir
     public int Y { get; set; } // Coordonnée Y du tir
+    public int J { get; set; } // Joueur qui tir
 }

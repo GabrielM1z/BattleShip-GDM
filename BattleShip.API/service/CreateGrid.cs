@@ -67,6 +67,24 @@ namespace BattleShip.API.Service
             return gridArray;
         }
 
+        public bool?[][] GetBoolGridArray(bool?[,] grid)
+        {
+            // Conversion de la matrice 2D en tableau de tableaux
+            bool?[][] gridArray = new bool?[grid.GetLength(0)][];
+
+            for (int i = 0; i < grid.GetLength(0); i++)
+            {
+                gridArray[i] = new bool?[grid.GetLength(1)];
+                for (int j = 0; j < grid.GetLength(1); j++)
+                {
+                    gridArray[i][j] = grid[i, j];
+                }
+            }
+
+            return gridArray;
+        }
+
+
         
 
         public void PlaceBoat(Grid grid)
@@ -182,6 +200,38 @@ namespace BattleShip.API.Service
             }
             return true;
         }
+
+        public bool?[,] MaskedGrid(Grid grid)
+        {
+            // Crée une nouvelle grille avec des bool? (true, false, null)
+            bool?[,] maskedGrid = new bool?[grid.Size, grid.Size];
+
+            for (int i = 0; i < grid.Size; i++)
+            {
+                for (int j = 0; j < grid.Size; j++)
+                {
+                    if (grid.Matrix[i, j] == 'X')
+                    {
+                        // Bateau touché
+                        maskedGrid[i, j] = true;
+                    }
+                    else if (grid.Matrix[i, j] == 'O')
+                    {
+                        // Tir raté
+                        maskedGrid[i, j] = false;
+                    }
+                    else
+                    {
+                        // Case non révélée (bateau ou vide)
+                        maskedGrid[i, j] = null;
+                    }
+                }
+            }
+
+            return maskedGrid;
+        }
+
+
 
     }
 }
