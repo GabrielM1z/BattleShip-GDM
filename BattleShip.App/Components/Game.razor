@@ -9,16 +9,70 @@
 
     @* Grid de l'adversaire *@
     <div class="oponent-grid">
-        <BattleShip.App.Components.GridView title="Opponent Grid">
-
-        </BattleShip.App.Components.GridView>
+        <div class="sub-title">
+			<h3>Opponent Grid</h3>
+		</div>
+		<div class="grid-container">
+			@for (int row = 0; row < 10; row++)
+			{
+				<div class="grid-row pos-{row}">
+					@for (int col = 0; col < 10; col++)
+					{
+						<div class="grid-item pos-{row}-{col} pos-{col}">
+							<div class="grid-item pos-{row}-{col} pos-{col}">
+								@if (GameState.MaskedGridJ2 != null)
+								{
+									@if (GameState.MaskedGridJ2[row][col] == true)
+									{
+										<img src="img/hit.png" alt="Touché" class="img-target-grid" />
+									}
+									else if (GameState.MaskedGridJ2[row][col] == false)
+									{
+										<img src="img/miss.png" alt="Raté" class="img-target-grid" />
+									}
+								}
+							</div>
+						</div>
+					}
+				</div>
+			}
+		</div>
     </div>
 
-    @* notre grille *@
-    <div class="our-grid">
-        <BattleShip.App.Components.GridView title="Your grid">
 
-        </BattleShip.App.Components.GridView>
+
+    @* Notre grille *@
+    <div class="our-grid">
+        <div class="sub-title">
+			<h3>Our Grid</h3>
+		</div>
+		<div class="grid-container">
+			@for (int row = 0; row < 10; row++)
+			{
+				<div class="grid-row pos-{row}">
+					@for (int col = 0; col < 10; col++)
+					{
+						<div class="grid-item pos-{row}-{col} pos-{col}">
+							@if (GameState.GridJ1 != null)
+							{
+								@if (GameState.GridJ1[row][col] != '\0')
+								{
+									<span>@GameState.GridJ1[row][col]</span> <!-- Lettre du bateau -->
+								}
+								else
+								{
+									<span>-</span> <!-- Case vide -->
+								}
+							}
+							else {
+								<span>a</span>
+							}
+							
+						</div>
+					}
+				</div>
+			}
+		</div>
     </div>
 
 </div>
@@ -27,19 +81,43 @@
 <!-- Bouton pour démarrer le jeu -->
 <button @onclick="StartGame">Démarrer un nouveau jeu</button>
 
+
 @code {
     private async Task StartGame()
-    {
-        var response = await Http.GetAsync("generateGrid");
+    {		
+        var response = await Http.GetAsync("/start");
+		Console.WriteLine(response);
+
         if (response.IsSuccessStatusCode)
         {
+			
+
             var json = await response.Content.ReadAsStringAsync();
-            Console.WriteLine("Réponse JSON : " + json);
+			Console.WriteLine(json);
+			
+            if (json != null)
+            {
+				// On set les options de desérialization 
+				var options = new System.Text.Json.JsonSerializerOptions
+				{
+					PropertyNameCaseInsensitive = true, // Assure la correspondance des noms des propriétés sans tenir compte de la casse
+					Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping // Gère les caractères Unicode comme '\u0000'
+				};
+
+				// Déserialization du JSON
+                var gridsResponse = System.Text.Json.JsonSerializer.Deserialize<BattleShip.Models.Game>(json, options);
+
+				// On met à jour notre singleton
+				if (gridsResponse != null)
+				{
+					GameState.GridJ1 = gridsResponse.GridJ1;
+					GameState.MaskedGridJ2 = gridsResponse.MaskedGridJ2;
+				}
+            }
         }
         else
         {
             Console.WriteLine("Erreur lors de l'appel API : " + response.StatusCode);
         }
-        
     }
 }
