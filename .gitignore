@@ -1,11 +1,9 @@
 # Ignorer les fichiers dans BattleShip.API
-BattleShip.API/obj/Debug/net8.0/BattleShip.API.AssemblyInfo.cs
-BattleShip.API/obj/Debug/net8.0/BattleShip.API.AssemblyInfoInputs.cache
-
+BattleShip.API.bin.*
+BattleShip.API.obj.*
 # Ignorer les fichiers dans BattleShip.App
-BattleShip.App/obj/Debug/net8.0/BattleShip.App.AssemblyInfo.cs
-BattleShip.App/obj/Debug/net8.0/BattleShip.App.AssemblyInfoInputs.cache
-
+BattleShip.App.bin.*
+BattleShip.App.obj.*
 # Ignorer les fichiers dans BattleShip.Models
-BattleShip.Models/obj/Debug/net8.0/BattleShip.Models.AssemblyInfo.cs
-BattleShip.Models/obj/Debug/net8.0/BattleShip.Models.AssemblyInfoInputs.cache
+BattleShip.Models.bin.*
+BattleShip.Models.obj.*
