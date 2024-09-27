@@ -1,21 +1,24 @@
+@using BattleShip.Models
 
 @inject GameState GameState  // Injecte le singleton GameState
 @inject HttpClient Http      // Injecte le client HTTP pour appeler l'API
+@inject IJSRuntime JS
+
 
 <div class="grids">
 
     @* Grid de l'adversaire *@
     <div class="oponent-grid">
-        <BattleShip.App.Components.Grid title="Opponent Grid">
+        <BattleShip.App.Components.GridView title="Opponent Grid">
 
-        </BattleShip.App.Components.Grid>
+        </BattleShip.App.Components.GridView>
     </div>
 
     @* notre grille *@
     <div class="our-grid">
-        <BattleShip.App.Components.Grid title="Your grid">
+        <BattleShip.App.Components.GridView title="Your grid">
 
-        </BattleShip.App.Components.Grid>
+        </BattleShip.App.Components.GridView>
     </div>
 
 </div>
@@ -27,14 +30,16 @@
 @code {
     private async Task StartGame()
     {
-        // Appeler l'API pour démarrer un nouveau jeu et récupérer les informations
-        // Par exemple, POST /api/start-game
-        var response = await Http.PostAsync("/generateGrid", null);
+        var response = await Http.GetAsync("generateGrid");
         if (response.IsSuccessStatusCode)
         {
-            // Mettre à jour les grilles en fonction de la réponse de l'API
-            // Exemple de logique pour récupérer les grilles
+            var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine("Réponse JSON : " + json);
         }
+        else
+        {
+            Console.WriteLine("Erreur lors de l'appel API : " + response.StatusCode);
+        }
+        
     }
 }
-
