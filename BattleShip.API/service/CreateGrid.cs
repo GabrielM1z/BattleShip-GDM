@@ -8,7 +8,7 @@ namespace BattleShip.API.Service
         
         public Grid CreateGrid()
         {
-            var grid = new Grid(10); // Crée une grille de 10x10
+            var grid = new Grid(3); // Crée une grille de 10x10
             InitializeGrid(grid);
             PlaceBoat(grid);
             return grid;
@@ -92,11 +92,14 @@ namespace BattleShip.API.Service
             // Définir les bateaux à placer (taille et symbole)
             var boats = new List<Boat>
             {
+                /*
                 new Boat(4, 'A'), // Bateau de taille 4
                 new Boat(3, 'B'), // Bateau de taille 3
                 new Boat(3, 'C'), // Bateau de taille 3
                 new Boat(2, 'D'), // Bateau de taille 2
                 new Boat(2, 'E'), // Bateau de taille 2
+                */
+                new Boat(1, 'A'),  // Bateau de taille 1
                 new Boat(1, 'F')  // Bateau de taille 1
             };
 
@@ -162,6 +165,7 @@ namespace BattleShip.API.Service
         public class ShootResult
         {
             public bool IsHit { get; set; }
+            public bool CanShoot { get; set; }
         }
 
         public ShootResult PlayerShoot(char[][] targetGrid, int x, int y)
@@ -171,18 +175,23 @@ namespace BattleShip.API.Service
                 throw new ArgumentOutOfRangeException("Coordinates are out of bounds.");
             }
 
-            var hit = targetGrid[x][y] != '\0';
+            if (targetGrid[y][x] == 'X' || targetGrid[y][x] == 'O')
+            {
+                return new ShootResult { CanShoot = false };
+            }
+
+            var hit = targetGrid[y][x] != '\0';
             if (hit)
             {
-                targetGrid[x][y] = 'X';
+                targetGrid[y][x] = 'X';
             }
             else
             {
-                targetGrid[x][y] = 'O';
+                targetGrid[y][x] = 'O';
             }
 
-            Console.WriteLine("shoot", targetGrid[x][y]);
-            return new ShootResult { IsHit = hit };
+            Console.WriteLine("shoot", targetGrid[y][x]);
+            return new ShootResult { CanShoot = true, IsHit = hit };
         }
 
         public bool IsGameFinished(char[][] grid)
