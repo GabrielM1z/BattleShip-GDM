@@ -75,3 +75,53 @@
 code {
     color: #c02d76;
 }
+
+/* titre */
+div.title{
+    border: #1b6ec2 solid 2px;
+    background-color: #AAEEFF;
+    text-align: center;
+    border-radius: 10px;
+}
+
+/* Grid */
+div.sub-title{
+    text-align: center;
+}
+
+div.grid-container{
+    display: flex;
+    flex-direction: column;
+    width: fit-content;
+    border: black solid 1px;
+    margin: 0px 30px 30px 30px;
+}
+
+div.grid-row{
+    display: flex;
+    flex-direction: row;
+}
+
+div.grid-item{
+    display: flex;
+    width: 40px;
+    height: 40px;
+    border: black solid 1px;
+}
+
+div.our-grid div.grid-item{
+    width: 20px;
+    height: 20px;
+}
+
+div.our-grid{
+    border: #26b050 solid 1px;
+    border-radius: 10px;
+}
+
+div.grids{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+

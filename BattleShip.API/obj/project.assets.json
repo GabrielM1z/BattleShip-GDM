@@ -476,19 +476,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Albus\\.nuget\\packages\\": {}
+    "C:\\Users\\Gab\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Albus\\Documents\\EMA\\net\\BattleShip-GDM\\BattleShip.API\\BattleShip.API.csproj",
+      "projectUniqueName": "C:\\Users\\Gab\\OneDrive\\Bureau\\S9\\DotNET\\BattleShip-GDM\\BattleShip.API\\BattleShip.API.csproj",
       "projectName": "BattleShip.API",
-      "projectPath": "C:\\Users\\Albus\\Documents\\EMA\\net\\BattleShip-GDM\\BattleShip.API\\BattleShip.API.csproj",
-      "packagesPath": "C:\\Users\\Albus\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Albus\\Documents\\EMA\\net\\BattleShip-GDM\\BattleShip.API\\obj\\",
+      "projectPath": "C:\\Users\\Gab\\OneDrive\\Bureau\\S9\\DotNET\\BattleShip-GDM\\BattleShip.API\\BattleShip.API.csproj",
+      "packagesPath": "C:\\Users\\Gab\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Gab\\OneDrive\\Bureau\\S9\\DotNET\\BattleShip-GDM\\BattleShip.API\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Albus\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\Gab\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -500,8 +500,8 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Users\\Albus\\Documents\\EMA\\net\\BattleShip-GDM\\BattleShip.Models\\BattleShip.Models.csproj": {
-              "projectPath": "C:\\Users\\Albus\\Documents\\EMA\\net\\BattleShip-GDM\\BattleShip.Models\\BattleShip.Models.csproj"
+            "C:\\Users\\Gab\\OneDrive\\Bureau\\S9\\DotNET\\BattleShip-GDM\\BattleShip.Models\\BattleShip.Models.csproj": {
+              "projectPath": "C:\\Users\\Gab\\OneDrive\\Bureau\\S9\\DotNET\\BattleShip-GDM\\BattleShip.Models\\BattleShip.Models.csproj"
             }
           }
         }
