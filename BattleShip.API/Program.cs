@@ -5,6 +5,17 @@ using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowBlazorClient", policy =>
+    {
+        policy.WithOrigins("http://localhost:5148") // Adresse du front-end Blazor WebAssembly
+              .AllowAnyMethod() // Autoriser toutes les méthodes HTTP (GET, POST, etc.)
+              .AllowAnyHeader() // Autoriser tous les en-têtes
+              .AllowCredentials(); // Si tu utilises des cookies ou des identifiants
+    });
+});
+
 // Ajoute le service GridService au conteneur DI
 builder.Services.AddSingleton<GridService>();
 
@@ -23,6 +34,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowBlazorClient");
 
 // Route Hello World
 app.MapGet("/", () => "Hello World")
