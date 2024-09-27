@@ -1,9 +1,9 @@
 # Ignorer les fichiers dans BattleShip.API
-BattleShip.API.bin.*
-BattleShip.API.obj.*
+BattleShip.API/bin/*
+BattleShip.API/obj/*
 # Ignorer les fichiers dans BattleShip.App
-BattleShip.App.bin.*
-BattleShip.App.obj.*
+BattleShip.App/bin/*
+BattleShip.App/obj/*
 # Ignorer les fichiers dans BattleShip.Models
-BattleShip.Models.bin.*
-BattleShip.Models.obj.*
+BattleShip.Models/bin/*
+BattleShip.Models/obj/*
