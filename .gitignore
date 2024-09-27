@@ -5,3 +5,6 @@ BattleShip.App/bin/
 BattleShip.App/obj/
 BattleShip.Models/bin/
 BattleShip.Models/obj/
+
+*.dll
+*.exe
