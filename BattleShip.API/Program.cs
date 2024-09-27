@@ -1,3 +1,4 @@
+using System.Reflection.Metadata.Ecma335;
 using BattleShip.API.Service; // Assure-toi que le chemin d'importation est correct
 using BattleShip.Models;
 
@@ -34,9 +35,15 @@ app.MapGet("/generateGrid", (GridService gridService) =>
     Grid gridJ1 = gridService.CreateGrid();
     char[][] gridArrayJ1 = gridService.GetGridArray(gridJ1); // Conversion de la grille en tableau de tableaux
 
+    // Impression de la grille J1 dans la console
+    gridService.PrintGrid(gridArrayJ1,"gridJ1");
+
     // Création de la grille pour le joueur 2
     Grid gridJ2 = gridService.CreateGrid();
     char[][] gridArrayJ2 = gridService.GetGridArray(gridJ2); // Conversion de la grille en tableau de tableaux
+
+    // Impression de la grille J2 dans la console
+    gridService.PrintGrid(gridArrayJ2,"gridJ2");
 
     // Retourne les grilles sous forme de JSON
     return Results.Ok(new { gridJ1 = gridArrayJ1, gridJ2 = gridArrayJ2 });

@@ -8,11 +8,37 @@ namespace BattleShip.API.Service
         
         public Grid CreateGrid()
         {
-            var grid = new Grid(4); // Crée une grille de 10x10
+            var grid = new Grid(6); // Crée une grille de 10x10
             InitializeGrid(grid);
-            //PlaceBoat(grid);
+            PlaceBoat(grid);
             return grid;
         }
+
+        public void PrintGrid(char[][] gridArray, string gridName)
+        {
+            Console.WriteLine($"Grille : {gridName}");
+            Console.WriteLine(new string('-', (gridArray[0].Length * 2) + 1)); // Ligne de séparation
+
+            for (int i = 0; i < gridArray.Length; i++)
+            {
+                Console.Write("|"); // Début de la ligne
+                for (int j = 0; j < gridArray[i].Length; j++)
+                {
+                    // Affiche chaque élément et aligne les éléments avec des espaces
+                    
+                    if (gridArray[i][j] == '\0'){
+                        Console.Write($" |");
+                    }else{
+                        Console.Write($"{gridArray[i][j]}|");
+                    }
+                }
+                Console.WriteLine(); // Fin de la ligne
+                Console.WriteLine(new string('-', (gridArray[0].Length * 2) + 1)); // Ligne de séparation
+            }
+        }
+
+
+
 
         private void InitializeGrid(Grid grid)
         {
