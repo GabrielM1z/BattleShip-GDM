@@ -141,5 +141,47 @@ namespace BattleShip.API.Service
             return true; // Bateau peut être placé
         }
 
+        public class ShootResult
+        {
+            public bool IsHit { get; set; }
+        }
+
+        public ShootResult PlayerShoot(char[][] targetGrid, int x, int y)
+        {
+            if (x < 0 || x >= targetGrid.Length || y < 0 || y >= targetGrid[0].Length)
+            {
+                throw new ArgumentOutOfRangeException("Coordinates are out of bounds.");
+            }
+
+            var hit = targetGrid[x][y] != '\0';
+            if (hit)
+            {
+                targetGrid[x][y] = 'X';
+            }
+            else
+            {
+                targetGrid[x][y] = 'O';
+            }
+
+            Console.WriteLine("shoot", targetGrid[x][y]);
+            return new ShootResult { IsHit = hit };
+        }
+
+        public bool IsGameFinished(char[][] grid)
+        {
+            foreach (var row in grid)
+            {
+                foreach (var cell in row)
+                {
+                    // Vérifie si le caractère est entre 'A' (65) et 'F' (70)
+                    if (cell >= 65 && cell <= 70) // plus simple a check selon moi
+                    {
+                        return false; // ça joue ncore
+                    }
+                }
+            }
+            return true;
+        }
+
     }
 }
