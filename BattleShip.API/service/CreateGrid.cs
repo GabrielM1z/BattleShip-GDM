@@ -8,7 +8,7 @@ namespace BattleShip.API.Service
         
         public Grid CreateGrid()
         {
-            var grid = new Grid(6); // Crée une grille de 10x10
+            var grid = new Grid(10); // Crée une grille de 10x10
             InitializeGrid(grid);
             PlaceBoat(grid);
             return grid;
@@ -17,6 +17,7 @@ namespace BattleShip.API.Service
 
         public void PrintGrid(char[][] gridArray, string gridName)
         {
+            /*
             Console.WriteLine($"Grille : {gridName}");
             Console.WriteLine(new string('-', (gridArray[0].Length * 2) + 1)); // Ligne de séparation
 
@@ -36,6 +37,7 @@ namespace BattleShip.API.Service
                 Console.WriteLine(); 
                 Console.WriteLine(new string('-', (gridArray[0].Length * 2) + 1)); 
             }
+            */
         }
 
 
@@ -55,7 +57,7 @@ namespace BattleShip.API.Service
 
         public void PlaceBoat(Grid grid)
         {
-            /*
+            //*
             var boats = new List<Boat>
             {
                 new Boat(4, 'A'),
@@ -127,6 +129,34 @@ namespace BattleShip.API.Service
 
             return true;
         }
+
+        public bool?[][] CreateMaskedGrid(Grid grid)
+        {
+            var maskedGrid = new bool?[grid.Size][];
+            for (int i = 0; i < grid.Size; i++)
+            {
+                maskedGrid[i] = new bool?[grid.Size];
+                for (int j = 0; j < grid.Size; j++)
+                {
+                    if (grid.GridArray[i][j] == 'X')
+                    {
+                        maskedGrid[i][j] = true; // Bateau touché
+                    }
+                    else if (grid.GridArray[i][j] == 'O')
+                    {
+                        maskedGrid[i][j] = false; // Tir raté
+                    }
+                    else
+                    {
+                        maskedGrid[i][j] = null; // Non révélé
+                    }
+                }
+            }
+
+            return maskedGrid;
+        }
+
+
 
 
         public class ShootResult
