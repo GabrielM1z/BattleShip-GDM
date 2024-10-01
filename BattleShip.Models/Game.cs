@@ -46,7 +46,7 @@ namespace BattleShip.Models
             }
         }
         // Méthode pour afficher la grille masquée
-        private void PrintMaskedGrid(bool?[][] maskedGrid, string gridName)
+        public void PrintMaskedGrid(bool?[][] maskedGrid, string gridName)
         {
             Console.WriteLine($"Masque : {gridName}");
             Console.WriteLine(new string('-', (maskedGrid[0].Length * 2) + 1));
@@ -56,6 +56,8 @@ namespace BattleShip.Models
                 Console.Write("|");
                 for (int j = 0; j < maskedGrid[i].Length; j++)
                 {
+                    Console.WriteLine($"{i},{j},{maskedGrid[i][j]}");
+                    /*
                     if (maskedGrid[i][j] == true)
                     {
                         Console.Write("X|"); // Bateau touché
@@ -68,6 +70,7 @@ namespace BattleShip.Models
                     {
                         Console.Write(" |"); // Non révélé
                     }
+                    */
                 }
                 Console.WriteLine();
                 Console.WriteLine(new string('-', (maskedGrid[0].Length * 2) + 1));
