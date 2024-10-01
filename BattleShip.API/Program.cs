@@ -48,29 +48,28 @@ app.MapGet("/start", (GridService gridService) =>
     var gameId = Guid.NewGuid();
 
     Grid gridJ1 = gridService.CreateGrid();
-    gridArrayJ1 = gridService.GetGridArray(gridJ1);
-
-
-    gridService.PrintGrid(gridArrayJ1, "gridJ1");
-
     Grid gridJ2 = gridService.CreateGrid();
-    gridArrayJ2 = gridService.GetGridArray(gridJ2);
-    bool?[,] maskgridJ2 = gridService.MaskedGrid(gridJ2);
-    bool?[][] gridArray = gridService.GetBoolGridArray(maskgridJ2);
 
-    gridService.PrintGrid(gridArrayJ2, "gridJ2");
+    var maskedJ1 = gridService.CreateMaskedGrid(gridJ1);
+    var maskedJ2 = gridService.CreateMaskedGrid(gridJ2);
 
     var game = new Game
     {
         Id = gameId,
-        GridJ1 = gridArrayJ1,
-        GridJ2 = gridArrayJ2,
-        MaskedGridJ2 = gridArray,
+        GridJ1 = gridJ1.GridArray,
+        GridJ2 = gridJ2.GridArray,
+        MaskedGridJ1 = maskedJ1,
+        MaskedGridJ2 = maskedJ2
     };
 
-    return Results.Ok(game);
+    game.PrintGame();
+
+    return Results.Ok(new {message = game.Id, GridJ1 = game.GridJ1, GridJ2 = game.GridJ2, MaskedGridJ1 = maskedJ1, MaskedGridJ2 = maskedJ2});
 })
 .WithOpenApi();
+
+
+/*
 
 // Route pour le tir
 app.MapPost("/shoot", (GridService gridService, [FromBody] ShootRequest request) =>
@@ -148,7 +147,7 @@ app.MapPost("/tour", (GridService gridService, [FromBody] ShootRequest request) 
 })
 .WithOpenApi();
 
-
+*/
 
 
 app.Run();

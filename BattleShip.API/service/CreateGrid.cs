@@ -8,14 +8,16 @@ namespace BattleShip.API.Service
         
         public Grid CreateGrid()
         {
-            var grid = new Grid(3); // Crée une grille de 10x10
+            var grid = new Grid(10); // Crée une grille de 10x10
             InitializeGrid(grid);
             PlaceBoat(grid);
             return grid;
         }
 
+
         public void PrintGrid(char[][] gridArray, string gridName)
         {
+            /*
             Console.WriteLine($"Grille : {gridName}");
             Console.WriteLine(new string('-', (gridArray[0].Length * 2) + 1)); // Ligne de séparation
 
@@ -32,76 +34,48 @@ namespace BattleShip.API.Service
                         Console.Write($"{gridArray[i][j]}|");
                     }
                 }
-                Console.WriteLine(); // Fin de la ligne
-                Console.WriteLine(new string('-', (gridArray[0].Length * 2) + 1)); // Ligne de séparation
+                Console.WriteLine(); 
+                Console.WriteLine(new string('-', (gridArray[0].Length * 2) + 1)); 
             }
+            */
         }
 
 
 
 
-        private void InitializeGrid(Grid grid)
+        public void InitializeGrid(Grid grid)
         {
-            for (int i = 0; i < grid.Matrix.GetLength(0); i++)
+            for (int i = 0; i < grid.Size; i++)
             {
-                for (int j = 0; j < grid.Matrix.GetLength(1); j++)
+                for (int j = 0; j < grid.Size; j++)
                 {
-                    grid.Matrix[i, j] = '\0'; // Remplit la grille avec '\0'
+                    grid.GridArray[i][j] = '\0';
                 }
             }
         }
 
-        public char[][] GetGridArray(Grid grid)
-        {
-            // Conversion de la matrice 2D en tableau de tableaux
-            char[][] gridArray = new char[grid.Matrix.GetLength(0)][];
-            for (int i = 0; i < grid.Matrix.GetLength(0); i++)
-            {
-                gridArray[i] = new char[grid.Matrix.GetLength(1)];
-                for (int j = 0; j < grid.Matrix.GetLength(1); j++)
-                {
-                    gridArray[i][j] = grid.Matrix[i, j];
-                }
-            }
-
-            return gridArray;
-        }
-
-        public bool?[][] GetBoolGridArray(bool?[,] grid)
-    {
-        // Conversion de la matrice 2D en tableau de tableaux
-        bool?[][] gridArray = new bool?[grid.GetLength(0)][];
-
-        for (int i = 0; i < grid.GetLength(0); i++)
-        {
-            gridArray[i] = new bool?[grid.GetLength(1)];
-            for (int j = 0; j < grid.GetLength(1); j++)
-            {
-                gridArray[i][j] = grid[i, j];
-            }
-        }
-
-        return gridArray;
-    }
-
-
-        
 
         public void PlaceBoat(Grid grid)
         {
-            // Définir les bateaux à placer (taille et symbole)
+            //*
             var boats = new List<Boat>
             {
-                /*
-                new Boat(4, 'A'), // Bateau de taille 4
-                new Boat(3, 'B'), // Bateau de taille 3
-                new Boat(3, 'C'), // Bateau de taille 3
-                new Boat(2, 'D'), // Bateau de taille 2
-                new Boat(2, 'E'), // Bateau de taille 2
-                */
-                new Boat(1, 'A'),  // Bateau de taille 1
-                new Boat(1, 'F')  // Bateau de taille 1
+                new Boat(4, 'A'),
+                new Boat(3, 'B'),
+                new Boat(3, 'C'),
+                new Boat(2, 'D'),
+                new Boat(2, 'E'),
+                new Boat(1, 'F') 
             };
+            /*/
+            var boats = new List<Boat>
+            {
+                new Boat(1, 'A'),
+                new Boat(3, 'B'),
+                new Boat(3, 'C'),
+                new Boat(1, 'F')
+            };
+            //*/
 
             foreach (var boat in boats)
             {
@@ -109,58 +83,81 @@ namespace BattleShip.API.Service
 
                 while (!placed)
                 {
-                    // Choisir aléatoirement la direction (0 = horizontal, 1 = vertical)
-                    bool horizontal = _random.Next(2) == 0;
-
-                    // Choisir une position de départ aléatoire
+                    bool horizontal = _random.Next(2) == 0; // Choisir aléatoirement horizontal ou vertical
                     int row = _random.Next(grid.Size);
                     int col = _random.Next(grid.Size);
 
-                    // Vérifier si le bateau peut être placé
                     if (CanPlaceBoat(grid, boat, row, col, horizontal))
                     {
-                        // Placer le bateau
                         for (int i = 0; i < boat.Size; i++)
                         {
                             if (horizontal)
-                                grid.Matrix[row, col + i] = boat.Symbol; // Placer horizontalement
+                                grid.GridArray[row][col + i] = boat.Symbol; // Placer horizontalement
                             else
-                                grid.Matrix[row + i, col] = boat.Symbol; // Placer verticalement
+                                grid.GridArray[row + i][col] = boat.Symbol; // Placer verticalement
                         }
-                        placed = true; // Bateau placé avec succès
+                        placed = true;
                     }
                 }
             }
         }
 
+        
+
+
         // Méthode pour vérifier si le bateau peut être placé
         private bool CanPlaceBoat(Grid grid, Boat boat, int row, int col, bool horizontal)
         {
-            // Vérifier les limites de la grille
             if (horizontal)
             {
-                if (col + boat.Size > grid.Size) return false; // Dépassement à droite
+                if (col + boat.Size > grid.Size) return false;
+
+                for (int i = 0; i < boat.Size; i++)
+                {
+                    if (grid.GridArray[row][col + i] != '\0') return false; // Vérifie s'il y a un bateau déjà placé
+                }
             }
             else
             {
-                if (row + boat.Size > grid.Size) return false; // Dépassement en bas
-            }
+                if (row + boat.Size > grid.Size) return false;
 
-            // Vérifier les cases occupées
-            for (int i = 0; i < boat.Size; i++)
-            {
-                if (horizontal)
+                for (int i = 0; i < boat.Size; i++)
                 {
-                    if (grid.Matrix[row, col + i] != '\0') return false; // Case déjà occupée
-                }
-                else
-                {
-                    if (grid.Matrix[row + i, col] != '\0') return false; // Case déjà occupée
+                    if (grid.GridArray[row + i][col] != '\0') return false; // Vérifie s'il y a un bateau déjà placé
                 }
             }
 
-            return true; // Bateau peut être placé
+            return true;
         }
+
+        public bool?[][] CreateMaskedGrid(Grid grid)
+        {
+            var maskedGrid = new bool?[grid.Size][];
+            for (int i = 0; i < grid.Size; i++)
+            {
+                maskedGrid[i] = new bool?[grid.Size];
+                for (int j = 0; j < grid.Size; j++)
+                {
+                    if (grid.GridArray[i][j] == 'X')
+                    {
+                        maskedGrid[i][j] = true; // Bateau touché
+                    }
+                    else if (grid.GridArray[i][j] == 'O')
+                    {
+                        maskedGrid[i][j] = false; // Tir raté
+                    }
+                    else
+                    {
+                        maskedGrid[i][j] = null; // Non révélé
+                    }
+                }
+            }
+
+            return maskedGrid;
+        }
+
+
+
 
         public class ShootResult
         {
@@ -203,13 +200,13 @@ namespace BattleShip.API.Service
                     // Vérifie si le caractère est entre 'A' (65) et 'F' (70)
                     if (cell >= 65 && cell <= 70) // plus simple a check selon moi
                     {
-                        return false; // ça joue ncore
+                        return false; // ça joue encore
                     }
                 }
             }
             return true;
         }
-
+/*
         public bool?[,] MaskedGrid(Grid grid)
         {
             // Crée une nouvelle grille avec des bool? (true, false, null)
@@ -240,7 +237,7 @@ namespace BattleShip.API.Service
             return maskedGrid;
         }
 
-
+*/
 
     }
 }
