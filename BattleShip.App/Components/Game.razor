@@ -101,17 +101,18 @@
 
 		// on envoie
 		var response = await Http.PostAsync("/shoot", content);
-
-		Console.WriteLine(response);
-		Console.WriteLine($"oui");
+		Console.WriteLine("Réponse JSON complète : " + response);
 
         if (response.IsSuccessStatusCode)
         {
             var json = await response.Content.ReadAsStringAsync();
-			Console.WriteLine(json);
+			Console.WriteLine("json1 :", json);
 			
-            if (json != null)
+            if (!string.IsNullOrEmpty(json))
             {
+				var jsonObject = System.Text.Json.JsonDocument.Parse(json);
+				Console.WriteLine("json2 :", jsonObject);
+
 				// On set les options de desérialization 
 				var options = new System.Text.Json.JsonSerializerOptions
 				{
@@ -119,20 +120,34 @@
 					Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping // Gère les caractères Unicode comme '\u0000'
 				};
 
-				// Déserialization du JSON
-                var gridsResponse = System.Text.Json.JsonSerializer.Deserialize<BattleShip.Models.Game>(json, options);
-
-				// On met à jour notre singleton
-				if (gridsResponse != null)
+				if (jsonObject.RootElement.TryGetProperty("game", out var gameElement) &&
+					jsonObject.RootElement.TryGetProperty("shootResult", out var shootResultElement))
 				{
-					if(grid){
+					var gameReponse = System.Text.Json.JsonSerializer.Deserialize<BattleShip.Models.Game>(jsonObject.RootElement.GetProperty("game").GetRawText());
+					var shootReponse = System.Text.Json.JsonSerializer.Deserialize<BattleShip.Models.ShootResult>(jsonObject.RootElement.GetProperty("shootResult").GetRawText());
 
+					Console.WriteLine("game :", gameReponse);
+					Console.WriteLine("shoot result :", shootReponse);
+
+					// Mise à jour du GameState si nécessaire
+					if (shootReponse != null && shootReponse.CanShoot && gameReponse != null)
+					{
+						GameState.GridJ1 = gameReponse.GridJ1;
+						GameState.MaskedGridJ2 = gameReponse.MaskedGridJ2;
+						GameState.start = true;
 					}
-					GameState.GridJ1 = gridsResponse.GridJ1;
-					GameState.MaskedGridJ2 = gridsResponse.MaskedGridJ2;
-                    GameState.start = true;
+					else
+					{
+						Console.WriteLine("shoot incorrect");
+					}
+				}
+				else {
+					Console.WriteLine("no property");
 				}
             }
+			else {
+				Console.WriteLine("json null");
+			}
         }
         else
         {
