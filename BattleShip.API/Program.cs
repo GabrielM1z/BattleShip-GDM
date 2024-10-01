@@ -57,6 +57,7 @@ app.MapGet("/start", (GridService gridService) =>
     var maskedJ2 = gridService.CreateMaskedGrid(gridJ2.GridArray);
 
     game.Id = gameId;
+    game.IsGameFinished = false;
     game.GridJ1 = gridJ1.GridArray;
     game.GridJ2 = gridJ2.GridArray;
     game.MaskedGridJ1 = maskedJ1;
@@ -64,7 +65,7 @@ app.MapGet("/start", (GridService gridService) =>
 
     game.PrintGame();
 
-    return Results.Ok(new {message = game.Id, GridJ1 = game.GridJ1, GridJ2 = game.GridJ2, MaskedGridJ1 = maskedJ1, MaskedGridJ2 = maskedJ2});
+    return Results.Ok(new {Id = game.Id,IsGameFinished = game.IsGameFinished, GridJ1 = game.GridJ1, GridJ2 = game.GridJ2, MaskedGridJ1 = maskedJ1, MaskedGridJ2 = maskedJ2});
 })
 .WithOpenApi();
 
