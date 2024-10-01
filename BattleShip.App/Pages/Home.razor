@@ -13,12 +13,15 @@
     <h1>Battle Ship</h1>
 </div>
 
-<!-- Bouton pour démarrer le jeu -->
-<button @onclick="StartGame">Démarrer un nouveau jeu</button>
+
 
 @if(GameState != null && GameState.start == true)
 {
     <BattleShip.App.Components.Game></BattleShip.App.Components.Game>
+}
+else {
+    <!-- Bouton pour démarrer le jeu -->
+    <button @onclick="StartGame">Démarrer un nouveau jeu</button>
 }
 
 
@@ -32,8 +35,7 @@
 
         if (response.IsSuccessStatusCode)
         {
-			
-
+		
             var json = await response.Content.ReadAsStringAsync();
 			Console.WriteLine(json);
 			

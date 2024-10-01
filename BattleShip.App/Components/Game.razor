@@ -1,4 +1,5 @@
 @using BattleShip.Models
+@using System.Text
 
 @inject GameState GameState  // Injecte le singleton GameState
 @inject HttpClient Http      // Injecte le client HTTP pour appeler l'API
@@ -83,10 +84,95 @@
 
 
 @code {
-   
-	private void Shoot(int row, int col)
+
+	private async Task Shoot(int row, int col)
     {
+		// on crée l'objet a envoyer
+		var shootRequest = new ShootRequest
+		{
+			x = col,
+			y = row,
+			j = 1
+		};
+
+		// on serialize en JSON
+		var jsonSend = System.Text.Json.JsonSerializer.Serialize(shootRequest);
+		var content = new StringContent(jsonSend, Encoding.UTF8, "application/json");
+		Console.WriteLine("content : " + content);
+
+		// on envoie
+		var response = await Http.PostAsync("/shoot", content);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var json = await response.Content.ReadAsStringAsync();
+			Console.WriteLine("JSON 1");
+			Console.WriteLine(json);
+			
+            if (!string.IsNullOrEmpty(json))
+            {
+				// On set les options de desérialization 
+				var options = new System.Text.Json.JsonSerializerOptions
+				{
+					PropertyNameCaseInsensitive = true, // Assure la correspondance des noms des propriétés sans tenir compte de la casse
+					Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping // Gère les caractères Unicode comme '\u0000'
+				};
+
+				var gameShootResponse = System.Text.Json.JsonSerializer.Deserialize<GameShootResponse>(json, options);
+				Console.WriteLine("gameShootResponse");
+				Console.WriteLine(gameShootResponse);
+
+				if (gameShootResponse != null)
+				{
+					var gameReponse = gameShootResponse.game;
+					var shootReponse = gameShootResponse.shootResult;
+
+					Console.WriteLine("GridJ1 : " + (gameReponse.GridJ1 != null ? "non null" : "null"));
+					Console.WriteLine("gameReponse");
+					Console.WriteLine(gameReponse.GridJ1);
+					Console.WriteLine("shootReponse");
+					Console.WriteLine(shootReponse);
+
+					// Mise à jour du GameState si nécessaire
+					if (shootReponse != null && shootReponse.CanShoot && gameReponse != null)
+					{
+						GameState.GridJ1 = gameReponse.GridJ1;
+						GameState.MaskedGridJ2 = gameReponse.MaskedGridJ2;
+						GameState.start = true;
+					}
+					else
+					{
+						Console.WriteLine("shoot incorrect");
+					}
+				}
+				else {
+					Console.WriteLine("no property");
+				}
+            }
+			else {
+				Console.WriteLine("json null");
+			}
+        }
+        else
+        {
+            Console.WriteLine("Erreur lors de l'appel API : " + response.StatusCode);
+		}
+
 		// TODO Faire l'appel à l'API
         Console.WriteLine($"click shoot, row : row, {row} col : {col}");
     }
+
+
+	public class ShootRequest
+    {
+        public int x { get; set; }
+        public int y { get; set; }
+		public int j { get; set; }
+    }
+
+	public class GameShootResponse
+	{
+		public BattleShip.Models.Game game { get; set; }
+		public BattleShip.Models.ShootResult shootResult { get; set; }
+	}
 }
