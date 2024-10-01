@@ -1,10 +1,66 @@
 ﻿@page "/"
 
+@using BattleShip.Models
+
+@inject GameState GameState  // Injecte le singleton GameState
+@inject HttpClient Http      // Injecte le client HTTP pour appeler l'API
+@inject IJSRuntime JS
+
+
 <PageTitle>Battle Ship</PageTitle>
 
 <div class="title">
     <h1>Battle Ship</h1>
 </div>
 
+<!-- Bouton pour démarrer le jeu -->
+<button @onclick="StartGame">Démarrer un nouveau jeu</button>
 
-<BattleShip.App.Components.Game></BattleShip.App.Components.Game>
+@if(GameState != null && GameState.start == true)
+{
+    <BattleShip.App.Components.Game></BattleShip.App.Components.Game>
+}
+
+
+
+
+@code {
+    private async Task StartGame()
+    {		
+        var response = await Http.GetAsync("/start");
+		Console.WriteLine(response);
+
+        if (response.IsSuccessStatusCode)
+        {
+			
+
+            var json = await response.Content.ReadAsStringAsync();
+			Console.WriteLine(json);
+			
+            if (json != null)
+            {
+				// On set les options de desérialization 
+				var options = new System.Text.Json.JsonSerializerOptions
+				{
+					PropertyNameCaseInsensitive = true, // Assure la correspondance des noms des propriétés sans tenir compte de la casse
+					Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping // Gère les caractères Unicode comme '\u0000'
+				};
+
+				// Déserialization du JSON
+                var gridsResponse = System.Text.Json.JsonSerializer.Deserialize<BattleShip.Models.Game>(json, options);
+
+				// On met à jour notre singleton
+				if (gridsResponse != null)
+				{
+					GameState.GridJ1 = gridsResponse.GridJ1;
+					GameState.MaskedGridJ2 = gridsResponse.MaskedGridJ2;
+                    GameState.start = true;
+				}
+            }
+        }
+        else
+        {
+            Console.WriteLine("Erreur lors de l'appel API : " + response.StatusCode);
+        }
+    }
+}
