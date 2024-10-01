@@ -8,6 +8,7 @@ public class GameState
 
     // partie commencé ?
     public bool start = false;
+    public bool end = false;
 
     // Initialisation des grilles
     public GameState()

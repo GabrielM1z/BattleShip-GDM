@@ -126,3 +126,22 @@ div.grids{
     align-items: center;
 }
 
+
+
+/* Ecran de fin du jeu */
+.end-game-overlay {
+    position: absolute; /* Elle est positionnée par rapport à la parent-div */
+    top: 0;
+    left: 0;
+    width: 100%; /* Elle prend tout l'espace horizontal */
+    height: 100%; /* Elle prend tout l'espace vertical */
+    background-color: rgba(0, 0, 0, 0.7); /* Fond noir avec une opacité de 70% */
+    z-index: 2; /* Par-dessus le contenu principal */
+    display: flex; /* Pour centrer le texte */
+    justify-content: center; /* Centre horizontalement */
+    align-items: center; /* Centre verticalement */
+    color: white; /* Couleur du texte */
+    font-size: 2em; /* Taille du texte */
+    opacity: 1; /* Initialement invisible */
+    transition: opacity 0.5s ease; /* Transition douce */
+}

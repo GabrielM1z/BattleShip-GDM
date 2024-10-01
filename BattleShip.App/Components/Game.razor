@@ -52,27 +52,20 @@
 		<div class="grid-container">
 			@for (int row = 0; row < 10; row++)
 			{
-				
 				<div class="grid-row pos-{row}">
 					@for (int col = 0; col < 10; col++)
 					{
-						
 						<div class="grid-item pos-{row}-{col} pos-{col}">
 							@if (GameState.GridJ1 != null)
 							{
 								@if (GameState.GridJ1[row][col] != '\0')
 								{
-									<span>@GameState.GridJ1[row][col]</span> <!-- Lettre du bateau -->
-								}
-								else
-								{
-									
+									<span>@GameState.GridJ1[row][col]</span>
 								}
 							}
 							else {
-								<span>a</span>
+								<span>?</span>
 							}
-							
 						</div>
 					}
 				</div>
@@ -80,7 +73,19 @@
 		</div>
     </div>
 
+
+	@* Si le jeu est fini, on couvre l'écran *@
+	@if(GameState.end)
+	{
+		<div class="end-game-overlay" id="endGameOverlay">
+			<p>Fin du Jeu</p>
+			@* <button @onclick="">Démarrer un nouveau jeu</button> *@
+		</div>
+	}
+
 </div>
+
+
 
 
 @code {
@@ -133,6 +138,11 @@
 						GameState.GridJ1 = gameReponse.GridJ1;
 						GameState.MaskedGridJ2 = gameReponse.MaskedGridJ2;
 						GameState.start = true;
+
+						if(gameReponse.IsGameFinished){
+						GameState.end = true;
+
+						}
 					}
 					else
 					{
