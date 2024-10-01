@@ -15,11 +15,13 @@
 		<div class="grid-container">
 			@for (int row = 0; row < 10; row++)
 			{
+				var currentRow = row;
 				<div class="grid-row pos-{row}">
 					@for (int col = 0; col < 10; col++)
 					{
+						var currentCol = col;
 						<div class="grid-item pos-{row}-{col} pos-{col}">
-							<div class="grid-item pos-{row}-{col} pos-{col}">
+							<div class="grid-item pos-{row}-{col} pos-{col}" @onclick="() => Shoot(currentRow, currentCol)">
 								@if (GameState.MaskedGridJ2 != null)
 								{
 									@if (GameState.MaskedGridJ2[row][col] == true)
@@ -49,9 +51,11 @@
 		<div class="grid-container">
 			@for (int row = 0; row < 10; row++)
 			{
+				
 				<div class="grid-row pos-{row}">
 					@for (int col = 0; col < 10; col++)
 					{
+						
 						<div class="grid-item pos-{row}-{col} pos-{col}">
 							@if (GameState.GridJ1 != null)
 							{
@@ -119,5 +123,12 @@
         {
             Console.WriteLine("Erreur lors de l'appel API : " + response.StatusCode);
         }
+    }
+
+
+	private void Shoot(int row, int col)
+    {
+		// TODO Faire l'appel à l'API
+        Console.WriteLine($"click shoot, row : row, {row} col : {col}");
     }
 }
