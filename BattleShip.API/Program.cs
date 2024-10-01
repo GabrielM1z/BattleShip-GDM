@@ -25,9 +25,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-
-char[][] gridArrayJ1 = null;
-char[][] gridArrayJ2 = null;
+var game = new Game{};
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -50,17 +48,14 @@ app.MapGet("/start", (GridService gridService) =>
     Grid gridJ1 = gridService.CreateGrid();
     Grid gridJ2 = gridService.CreateGrid();
 
-    var maskedJ1 = gridService.CreateMaskedGrid(gridJ1);
-    var maskedJ2 = gridService.CreateMaskedGrid(gridJ2);
+    var maskedJ1 = gridService.CreateMaskedGrid(gridJ1.GridArray);
+    var maskedJ2 = gridService.CreateMaskedGrid(gridJ2.GridArray);
 
-    var game = new Game
-    {
-        Id = gameId,
-        GridJ1 = gridJ1.GridArray,
-        GridJ2 = gridJ2.GridArray,
-        MaskedGridJ1 = maskedJ1,
-        MaskedGridJ2 = maskedJ2
-    };
+    game.Id = gameId;
+    game.GridJ1 = gridJ1.GridArray;
+    game.GridJ2 = gridJ2.GridArray;
+    game.MaskedGridJ1 = maskedJ1;
+    game.MaskedGridJ2 = maskedJ2;
 
     game.PrintGame();
 
@@ -69,85 +64,178 @@ app.MapGet("/start", (GridService gridService) =>
 .WithOpenApi();
 
 
-/*
+
 
 // Route pour le tir
 app.MapPost("/shoot", (GridService gridService, [FromBody] ShootRequest request) =>
 {
     Console.WriteLine("shoot call");
+
+    // Vérifie si le joueur a bien sélectionné une grille adverse
+    char[][] gridJoueur = null;
     char[][] gridAdverse = null;
-    if (request.J == 1){
-        gridAdverse = gridArrayJ2;
-    }else{
-        gridAdverse = gridArrayJ1;
+    if (request.J == 1)
+    {
+        gridJoueur = game.GridJ1; 
+        gridAdverse = game.GridJ2; // Le joueur 1 tire sur la grille du joueur 2
+    }
+    else if (request.J == 2)
+    {
+        gridAdverse = game.GridJ1; // Le joueur 2 tire sur la grille du joueur 1
+        gridJoueur = game.GridJ2;
+    }
+    else
+    {
+        return Results.BadRequest(new { message = "Joueur invalide." });
     }
 
+    // Effectue le tir
     var shootResult = gridService.PlayerShoot(gridAdverse, request.X, request.Y);
-    if (shootResult.CanShoot == false){
+    
+    // Si le tir est impossible, on retourne un message approprié
+    if (!shootResult.CanShoot)
+    {
         return Results.Ok(new { message = "Tir impossible.", shoot = shootResult.CanShoot });
     }
-    gridService.PrintGrid(gridAdverse, "Grille jouée");
+
+    // Vérifie si le jeu est terminé
     bool gameFinished = false;
-    if (shootResult.IsHit && gridService.IsGameFinished(gridAdverse)){
+    if (shootResult.IsHit && gridService.IsGameFinished(gridAdverse))
+    {
         gameFinished = true;
     }
+
+    game.MaskedGridJ1 = gridService.CreateMaskedGrid(game.GridJ1);
+    game.MaskedGridJ2 = gridService.CreateMaskedGrid(game.GridJ2);
+
+    game.PrintGame();
     
-    return Results.Ok(new { message = "Tir effectué.", shoot = shootResult.CanShoot, hit = shootResult.IsHit, isGameFinished = gameFinished });
+    // Retourne le résultat du tir
+    return Results.Ok(new 
+    { 
+        message = "Tir effectué.", 
+        shoot = shootResult.CanShoot, 
+        hit = shootResult.IsHit, 
+        isGameFinished = gameFinished,
+        GridJ1 = game.GridJ1,
+        GridJ2 = game.GridJ2,
+        MaskedGridJ1 = game.MaskedGridJ1,
+        MaskedGridJ2 = game.MaskedGridJ2
+    });
 })
 .WithOpenApi();
+
 
 app.MapPost("/tour", (GridService gridService, [FromBody] ShootRequest request) =>
 {
     Console.WriteLine("Tour du joueur et de l'IA");
 
-    // Tir du joueur
-    char[][] gridAdverseJoueur = (request.J == 1) ? gridArrayJ2 : gridArrayJ1; // Si le joueur est J1, il tire sur la grille de J2
-    var shootResultJoueur = gridService.PlayerShoot(gridAdverseJoueur, request.X, request.Y);
-    if (shootResultJoueur.CanShoot == false){
-        return Results.Ok(new { message = "Tir impossible.", shoot = shootResultJoueur.CanShoot });
+    // Vérifie si le joueur a bien sélectionné une grille adverse
+    char[][] gridJoueur = null;
+    char[][] gridAdverse = null;
+    if (request.J == 1)
+    {
+        gridJoueur = game.GridJ1; 
+        gridAdverse = game.GridJ2; // Le joueur 1 tire sur la grille du joueur 2
     }
-    gridService.PrintGrid(gridAdverseJoueur, "Grille après tir du joueur");
-    bool gameFinishedJoueur = false;
+    else if (request.J == 2)
+    {
+        gridAdverse = game.GridJ1; // Le joueur 2 tire sur la grille du joueur 1
+        gridJoueur = game.GridJ2;
+    }
+    else
+    {
+        return Results.BadRequest(new { message = "Joueur invalide." });
+    }
 
+    // Effectue le tir
+    var shootResult = gridService.PlayerShoot(gridAdverse, request.X, request.Y);
+    
+    
+    // Si le tir est impossible, on retourne un message approprié
+    if (!shootResult.CanShoot)
+    {
+        return Results.Ok(new { message = "Tir impossible.", shoot = shootResult.CanShoot });
+    }
+
+    
     // Vérifier si le joueur a gagné
-    if (shootResultJoueur.IsHit && gridService.IsGameFinished(gridAdverseJoueur))
+    if (shootResult.IsHit && gridService.IsGameFinished(gridAdverse))
     {
-        gameFinishedJoueur = true;
-        return Results.Ok(new { message = "Tir du joueur effectué.", hit = shootResultJoueur.IsHit, isGameFinished = gameFinishedJoueur, winner = "Joueur" });
+        return Results.Ok(new
+        {
+            message = "Tir du joueur effectué.",
+            hit = shootResult.IsHit,
+            isGameFinished = true,
+            winner = "Joueur"
+        });
     }
 
-    // Tour de l'IA
-    Random random = new Random();
-    int xIa, yIa;
-    char[][] gridAdverseIA = gridArrayJ1; // L'IA tire toujours sur la grille du joueur 1
+    // 2. Tir de l'IA
+    var (xIa, yIa) = GenerateValidIACoordinates(gridJoueur);
 
-    do
-    {
-        xIa = random.Next(gridAdverseIA.Length);  // Génère une coordonnée X
-        yIa = random.Next(gridAdverseIA[0].Length);  // Génère une coordonnée Y
-    } while (gridAdverseIA[xIa][yIa] == 'X' || gridAdverseIA[xIa][yIa] == 'O'); // Évite les tirs déjà effectués
-
-    var shootResultIA = gridService.PlayerShoot(gridAdverseIA, xIa, yIa);
-    gridService.PrintGrid(gridAdverseIA, "Grille après tir de l'IA");
-    bool gameFinishedIA = false;
+    var shootResultIA = gridService.PlayerShoot(gridJoueur, xIa, yIa);
 
     // Vérifier si l'IA a gagné
-    if (shootResultIA.IsHit && gridService.IsGameFinished(gridAdverseIA))
+    if (shootResultIA.IsHit && gridService.IsGameFinished(gridJoueur))
     {
-        gameFinishedIA = true;
-        return Results.Ok(new { message = "Tir de l'IA effectué.", hit = shootResultIA.IsHit, isGameFinished = gameFinishedIA, winner = "IA" });
+        return Results.Ok(new
+        {
+            message = "Tir de l'IA effectué.",
+            hit = shootResultIA.IsHit,
+            isGameFinished = true,
+            winner = "IA"
+        });
     }
 
+    game.MaskedGridJ1 = gridService.CreateMaskedGrid(game.GridJ1);
+    game.MaskedGridJ2 = gridService.CreateMaskedGrid(game.GridJ2);
+    
+    game.PrintGame();
+    // 3. Retourner les résultats des deux tirs (joueur et IA)
     return Results.Ok(new
     {
         message = "Tirs effectués.",
-        joueur = new { hit = shootResultJoueur.IsHit, isGameFinished = gameFinishedJoueur },
-        ia = new { hit = shootResultIA.IsHit, isGameFinished = gameFinishedIA }
+        joueur = new
+        {
+            hit = shootResult.IsHit,
+            isGameFinished = false,
+            x = request.X,
+            y = request.Y
+        },
+        ia = new
+        {
+            hit = shootResultIA.IsHit,
+            isGameFinished = false,
+            x = xIa,
+            y = yIa
+        },
+        GridJ1 = game.GridJ1,
+        GridJ2 = game.GridJ2,
+        MaskedGridJ1 = game.MaskedGridJ1,
+        MaskedGridJ2 = game.MaskedGridJ2
     });
 })
 .WithOpenApi();
 
-*/
+// Générer les coordonnées de tir de l'IA (fonction externe)
+(int, int) GenerateValidIACoordinates(char[][] grid)
+{
+    Random random = new Random();
+    int xIa, yIa;
+
+    do
+    {
+        xIa = random.Next(grid.Length);  // Génère une coordonnée X
+        yIa = random.Next(grid[0].Length);  // Génère une coordonnée Y
+    }
+    while (grid[xIa][yIa] == 'X' || grid[xIa][yIa] == 'O'); // Évite les tirs déjà effectués
+
+    return (xIa, yIa);
+}
+
+
+
 
 
 app.Run();

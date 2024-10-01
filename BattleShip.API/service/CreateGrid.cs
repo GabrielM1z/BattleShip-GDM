@@ -14,35 +14,6 @@ namespace BattleShip.API.Service
             return grid;
         }
 
-
-        public void PrintGrid(char[][] gridArray, string gridName)
-        {
-            /*
-            Console.WriteLine($"Grille : {gridName}");
-            Console.WriteLine(new string('-', (gridArray[0].Length * 2) + 1)); // Ligne de séparation
-
-            for (int i = 0; i < gridArray.Length; i++)
-            {
-                Console.Write("|"); // Début de la ligne
-                for (int j = 0; j < gridArray[i].Length; j++)
-                {
-                    // Affiche chaque élément et aligne les éléments avec des espaces
-                    
-                    if (gridArray[i][j] == '\0'){
-                        Console.Write($" |");
-                    }else{
-                        Console.Write($"{gridArray[i][j]}|");
-                    }
-                }
-                Console.WriteLine(); 
-                Console.WriteLine(new string('-', (gridArray[0].Length * 2) + 1)); 
-            }
-            */
-        }
-
-
-
-
         public void InitializeGrid(Grid grid)
         {
             for (int i = 0; i < grid.Size; i++)
@@ -130,19 +101,22 @@ namespace BattleShip.API.Service
             return true;
         }
 
-        public bool?[][] CreateMaskedGrid(Grid grid)
+        public bool?[][] CreateMaskedGrid(char[][] gridArray)
         {
-            var maskedGrid = new bool?[grid.Size][];
-            for (int i = 0; i < grid.Size; i++)
+            int gridSize = gridArray.Length; // On déduit la taille de la grille
+            var maskedGrid = new bool?[gridSize][];
+            
+            for (int i = 0; i < gridSize; i++)
             {
-                maskedGrid[i] = new bool?[grid.Size];
-                for (int j = 0; j < grid.Size; j++)
+                maskedGrid[i] = new bool?[gridSize];
+                
+                for (int j = 0; j < gridSize; j++)
                 {
-                    if (grid.GridArray[i][j] == 'X')
+                    if (gridArray[i][j] == 'X')
                     {
                         maskedGrid[i][j] = true; // Bateau touché
                     }
-                    else if (grid.GridArray[i][j] == 'O')
+                    else if (gridArray[i][j] == 'O')
                     {
                         maskedGrid[i][j] = false; // Tir raté
                     }
@@ -155,6 +129,7 @@ namespace BattleShip.API.Service
 
             return maskedGrid;
         }
+
 
 
 
