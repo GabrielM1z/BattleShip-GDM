@@ -2,6 +2,10 @@ using System.Reflection.Metadata.Ecma335;
 using BattleShip.API.Service;
 using BattleShip.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,65 +69,6 @@ app.MapGet("/start", (GridService gridService) =>
 
 
 
-
-// Route pour le tir
-app.MapPost("/shoot", (GridService gridService, [FromBody] ShootRequest request) =>
-{
-    Console.WriteLine("shoot call");
-
-    // Vérifie si le joueur a bien sélectionné une grille adverse
-    char[][] gridJoueur = null;
-    char[][] gridAdverse = null;
-    if (request.J == 1)
-    {
-        gridJoueur = game.GridJ1; 
-        gridAdverse = game.GridJ2; // Le joueur 1 tire sur la grille du joueur 2
-    }
-    else if (request.J == 2)
-    {
-        gridAdverse = game.GridJ1; // Le joueur 2 tire sur la grille du joueur 1
-        gridJoueur = game.GridJ2;
-    }
-    else
-    {
-        return Results.BadRequest(new { message = "Joueur invalide." });
-    }
-
-    // Effectue le tir
-    var shootResult = gridService.PlayerShoot(gridAdverse, request.X, request.Y);
-    
-    // Si le tir est impossible, on retourne un message approprié
-    if (!shootResult.CanShoot)
-    {
-        return Results.Ok(new { message = "Tir impossible.", shoot = shootResult.CanShoot });
-    }
-
-    // Vérifie si le jeu est terminé
-    bool gameFinished = false;
-    if (shootResult.IsHit && gridService.IsGameFinished(gridAdverse))
-    {
-        gameFinished = true;
-    }
-
-    game.MaskedGridJ1 = gridService.CreateMaskedGrid(game.GridJ1);
-    game.MaskedGridJ2 = gridService.CreateMaskedGrid(game.GridJ2);
-
-    game.PrintGame();
-    
-    // Retourne le résultat du tir
-    return Results.Ok(new 
-    { 
-        message = "Tir effectué.", 
-        shoot = shootResult.CanShoot, 
-        hit = shootResult.IsHit, 
-        isGameFinished = gameFinished,
-        GridJ1 = game.GridJ1,
-        GridJ2 = game.GridJ2,
-        MaskedGridJ1 = game.MaskedGridJ1,
-        MaskedGridJ2 = game.MaskedGridJ2
-    });
-})
-.WithOpenApi();
 
 
 app.MapPost("/tour", (GridService gridService, [FromBody] ShootRequest request) =>
@@ -218,6 +163,9 @@ app.MapPost("/tour", (GridService gridService, [FromBody] ShootRequest request) 
 })
 .WithOpenApi();
 
+
+
+
 // Générer les coordonnées de tir de l'IA (fonction externe)
 (int, int) GenerateValidIACoordinates(char[][] grid)
 {
@@ -234,6 +182,75 @@ app.MapPost("/tour", (GridService gridService, [FromBody] ShootRequest request) 
     return (xIa, yIa);
 }
 
+// Définir la fonction Toto sans modificateur d'accès
+static IResult shoot(GridService gridService, Game game,ShootRequest request)
+{
+    Console.WriteLine("shoot call");
+
+    // Vérifie si le joueur a bien sélectionné une grille adverse
+    char[][] gridJoueur = null;
+    char[][] gridAdverse = null;
+    if (request.J == 1)
+    {
+        gridJoueur = game.GridJ1; 
+        gridAdverse = game.GridJ2; // Le joueur 1 tire sur la grille du joueur 2
+    }
+    else if (request.J == 2)
+    {
+        gridAdverse = game.GridJ1; // Le joueur 2 tire sur la grille du joueur 1
+        gridJoueur = game.GridJ2;
+    }
+    else
+    {
+        return Results.BadRequest(new { message = "Joueur invalide." });
+    }
+
+    // Effectue le tir
+    var shootResult = gridService.PlayerShoot(gridAdverse, request.X, request.Y);
+    
+    // Si le tir est impossible, on retourne un message approprié
+    if (!shootResult.CanShoot)
+    {
+        return Results.Ok(new { message = "Tir impossible.", shoot = shootResult.CanShoot });
+    }
+
+    // Vérifie si le jeu est terminé
+    bool gameFinished = false;
+    if (shootResult.IsHit && gridService.IsGameFinished(gridAdverse))
+    {
+        gameFinished = true;
+    }
+
+    game.MaskedGridJ1 = gridService.CreateMaskedGrid(game.GridJ1);
+    game.MaskedGridJ2 = gridService.CreateMaskedGrid(game.GridJ2);
+
+    game.PrintGame();
+    
+    // Retourne le résultat du tir
+    return Results.Ok(new 
+    { 
+        Game = new {
+            message = "Tir effectué.", 
+            isGameFinished = gameFinished,
+            GridJ1 = game.GridJ1,
+            GridJ2 = game.GridJ2,
+            MaskedGridJ1 = game.MaskedGridJ1,
+            MaskedGridJ2 = game.MaskedGridJ2
+        },
+        ShootResult = new{
+            shoot = shootResult.CanShoot,
+            hit = shootResult.IsHit
+            
+        }
+    });
+}
+
+// Exemple d'utilisation de la fonction Toto dans une route
+app.MapPost("/shoot", (GridService gridService, [FromBody] ShootRequest request) => 
+{
+    return shoot(gridService, game, request);
+})
+.WithOpenApi();
 
 
 
@@ -247,3 +264,4 @@ public class ShootRequest
     public int Y { get; set; } // Coordonnée Y du tir
     public int J { get; set; } // Joueur qui tir
 }
+

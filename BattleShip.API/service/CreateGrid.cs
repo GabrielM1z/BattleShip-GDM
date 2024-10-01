@@ -134,12 +134,6 @@ namespace BattleShip.API.Service
 
 
 
-        public class ShootResult
-        {
-            public bool IsHit { get; set; }
-            public bool CanShoot { get; set; }
-        }
-
         public ShootResult PlayerShoot(char[][] targetGrid, int x, int y)
         {
             if (x < 0 || x >= targetGrid.Length || y < 0 || y >= targetGrid[0].Length)
@@ -181,38 +175,7 @@ namespace BattleShip.API.Service
             }
             return true;
         }
-/*
-        public bool?[,] MaskedGrid(Grid grid)
-        {
-            // Crée une nouvelle grille avec des bool? (true, false, null)
-            bool?[,] maskedGrid = new bool?[grid.Size, grid.Size];
 
-            for (int i = 0; i < grid.Size; i++)
-            {
-                for (int j = 0; j < grid.Size; j++)
-                {
-                    if (grid.Matrix[i, j] == 'X')
-                    {
-                        // Bateau touché
-                        maskedGrid[i, j] = true;
-                    }
-                    else if (grid.Matrix[i, j] == 'O')
-                    {
-                        // Tir raté
-                        maskedGrid[i, j] = false;
-                    }
-                    else
-                    {
-                        // Case non révélée (bateau ou vide)
-                        maskedGrid[i, j] = null;
-                    }
-                }
-            }
-
-            return maskedGrid;
-        }
-
-*/
 
     }
 }
