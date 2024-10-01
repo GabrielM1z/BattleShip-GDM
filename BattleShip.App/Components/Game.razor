@@ -98,21 +98,19 @@
 		// on serialize en JSON
 		var jsonSend = System.Text.Json.JsonSerializer.Serialize(shootRequest);
 		var content = new StringContent(jsonSend, Encoding.UTF8, "application/json");
+		Console.WriteLine("content : " + content);
 
 		// on envoie
 		var response = await Http.PostAsync("/shoot", content);
-		Console.WriteLine("Réponse JSON complète : " + response);
 
         if (response.IsSuccessStatusCode)
         {
             var json = await response.Content.ReadAsStringAsync();
-			Console.WriteLine("json1 :", json);
+			Console.WriteLine("JSON 1");
+			Console.WriteLine(json);
 			
             if (!string.IsNullOrEmpty(json))
             {
-				var jsonObject = System.Text.Json.JsonDocument.Parse(json);
-				Console.WriteLine("json2 :", jsonObject);
-
 				// On set les options de desérialization 
 				var options = new System.Text.Json.JsonSerializerOptions
 				{
@@ -120,14 +118,20 @@
 					Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping // Gère les caractères Unicode comme '\u0000'
 				};
 
-				if (jsonObject.RootElement.TryGetProperty("game", out var gameElement) &&
-					jsonObject.RootElement.TryGetProperty("shootResult", out var shootResultElement))
-				{
-					var gameReponse = System.Text.Json.JsonSerializer.Deserialize<BattleShip.Models.Game>(jsonObject.RootElement.GetProperty("game").GetRawText());
-					var shootReponse = System.Text.Json.JsonSerializer.Deserialize<BattleShip.Models.ShootResult>(jsonObject.RootElement.GetProperty("shootResult").GetRawText());
+				var gameShootResponse = System.Text.Json.JsonSerializer.Deserialize<GameShootResponse>(json, options);
+				Console.WriteLine("gameShootResponse");
+				Console.WriteLine(gameShootResponse);
 
-					Console.WriteLine("game :", gameReponse);
-					Console.WriteLine("shoot result :", shootReponse);
+				if (gameShootResponse != null)
+				{
+					var gameReponse = gameShootResponse.game;
+					var shootReponse = gameShootResponse.shootResult;
+
+					Console.WriteLine("GridJ1 : " + (gameReponse.GridJ1 != null ? "non null" : "null"));
+					Console.WriteLine("gameReponse");
+					Console.WriteLine(gameReponse.GridJ1);
+					Console.WriteLine("shootReponse");
+					Console.WriteLine(shootReponse);
 
 					// Mise à jour du GameState si nécessaire
 					if (shootReponse != null && shootReponse.CanShoot && gameReponse != null)
@@ -165,4 +169,10 @@
         public int y { get; set; }
 		public int j { get; set; }
     }
+
+	public class GameShootResponse
+	{
+		public BattleShip.Models.Game game { get; set; }
+		public BattleShip.Models.ShootResult shootResult { get; set; }
+	}
 }

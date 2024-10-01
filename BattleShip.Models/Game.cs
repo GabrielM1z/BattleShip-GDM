@@ -8,8 +8,6 @@ namespace BattleShip.Models
         public char[][] GridJ2 { get; set; }
         public bool?[][] MaskedGridJ1 { get; set; }
         public bool?[][] MaskedGridJ2 { get; set; }
-        public bool IsHit { get; set; }
-        public bool CanShoot { get; set; }
 
         // Méthode pour afficher les informations du jeu
         public void PrintGame()
