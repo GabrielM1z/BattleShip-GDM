@@ -98,17 +98,17 @@
 		// on serialize en JSON
 		var jsonSend = System.Text.Json.JsonSerializer.Serialize(shootRequest);
 		var content = new StringContent(jsonSend, Encoding.UTF8, "application/json");
-		Console.WriteLine("content : " + content);
 
 		// on envoie
 		var response = await Http.PostAsync("/shoot", content);
 
+		// Si on a une réponse en code 200
         if (response.IsSuccessStatusCode)
         {
+			// on met le json en String
             var json = await response.Content.ReadAsStringAsync();
-			Console.WriteLine("JSON 1");
-			Console.WriteLine(json);
 			
+			// si le Json n'est pas vide
             if (!string.IsNullOrEmpty(json))
             {
 				// On set les options de desérialization 
@@ -118,20 +118,14 @@
 					Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping // Gère les caractères Unicode comme '\u0000'
 				};
 
+				// On déserialize dans un objet adapté
 				var gameShootResponse = System.Text.Json.JsonSerializer.Deserialize<GameShootResponse>(json, options);
-				Console.WriteLine("gameShootResponse");
-				Console.WriteLine(gameShootResponse);
 
 				if (gameShootResponse != null)
 				{
+					// on recup le GameState et le ShootState
 					var gameReponse = gameShootResponse.game;
-					var shootReponse = gameShootResponse.shootResult;
-
-					Console.WriteLine("GridJ1 : " + (gameReponse.GridJ1 != null ? "non null" : "null"));
-					Console.WriteLine("gameReponse");
-					Console.WriteLine(gameReponse.GridJ1);
-					Console.WriteLine("shootReponse");
-					Console.WriteLine(shootReponse);
+					var shootReponse = gameShootResponse.shootResult;;
 
 					// Mise à jour du GameState si nécessaire
 					if (shootReponse != null && shootReponse.CanShoot && gameReponse != null)
@@ -158,7 +152,6 @@
             Console.WriteLine("Erreur lors de l'appel API : " + response.StatusCode);
 		}
 
-		// TODO Faire l'appel à l'API
         Console.WriteLine($"click shoot, row : row, {row} col : {col}");
     }
 
@@ -169,10 +162,4 @@
         public int y { get; set; }
 		public int j { get; set; }
     }
-
-	public class GameShootResponse
-	{
-		public BattleShip.Models.Game game { get; set; }
-		public BattleShip.Models.ShootResult shootResult { get; set; }
-	}
 }

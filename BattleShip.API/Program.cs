@@ -171,15 +171,15 @@ static IResult shoot(GridService gridService, Game game,ShootRequest request)
     return Results.Ok(new 
     { 
         Game = new {
-            isGameFinished = gameFinished,
+            IsGameFinished = gameFinished,
             GridJ1 = game.GridJ1,
             GridJ2 = game.GridJ2,
             MaskedGridJ1 = game.MaskedGridJ1,
             MaskedGridJ2 = game.MaskedGridJ2
         },
         ShootResult = new{
-            shoot = shootResult.CanShoot,
-            hit = shootResult.IsHit
+            CanShoot = shootResult.CanShoot,
+            IsHit = shootResult.IsHit
             
         }
     });
