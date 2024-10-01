@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -70,98 +71,47 @@ app.MapGet("/start", (GridService gridService) =>
 
 
 
-
 app.MapPost("/tour", (GridService gridService, [FromBody] ShootRequest request) =>
 {
     Console.WriteLine("Tour du joueur et de l'IA");
 
-    // Vérifie si le joueur a bien sélectionné une grille adverse
-    char[][] gridJoueur = null;
-    char[][] gridAdverse = null;
-    if (request.J == 1)
-    {
-        gridJoueur = game.GridJ1; 
-        gridAdverse = game.GridJ2; // Le joueur 1 tire sur la grille du joueur 2
-    }
-    else if (request.J == 2)
-    {
-        gridAdverse = game.GridJ1; // Le joueur 2 tire sur la grille du joueur 1
-        gridJoueur = game.GridJ2;
-    }
-    else
-    {
-        return Results.BadRequest(new { message = "Joueur invalide." });
-    }
-
-    // Effectue le tir
-    var shootResult = gridService.PlayerShoot(gridAdverse, request.X, request.Y);
+    // 1. Effectuer le tir du joueur
+    var playerShootResult = shoot(gridService, game, request);
+    // Vérifiez si le résultat est un OkObjectResult pour accéder à la valeur
     
-    
-    // Si le tir est impossible, on retourne un message approprié
-    if (!shootResult.CanShoot)
+    // Extraire le contenu du IResult
+    if (playerShootResult is OkObjectResult okObjectResult)
     {
-        return Results.Ok(new { message = "Tir impossible.", shoot = shootResult.CanShoot });
-    }
-
-    
-    // Vérifier si le joueur a gagné
-    if (shootResult.IsHit && gridService.IsGameFinished(gridAdverse))
-    {
-        return Results.Ok(new
+        var value = okObjectResult.Value; // Cette ligne est correcte
+        var jsonResult = System.Text.Json.JsonSerializer.Serialize(value, new System.Text.Json.JsonSerializerOptions
         {
-            message = "Tir du joueur effectué.",
-            hit = shootResult.IsHit,
-            isGameFinished = true,
-            winner = "Joueur"
+            WriteIndented = true
         });
+        Console.WriteLine($"The JSON result is: {jsonResult}");
     }
+
+
+
 
     // 2. Tir de l'IA
-    var (xIa, yIa) = GenerateValidIACoordinates(gridJoueur);
+    var (xIa, yIa) = GenerateValidIACoordinates(game.GridJ2);
+    var aiShootResult = shoot(gridService, game, new ShootRequest { X = xIa, Y = yIa, J = 2 });
 
-    var shootResultIA = gridService.PlayerShoot(gridJoueur, xIa, yIa);
-
-    // Vérifier si l'IA a gagné
-    if (shootResultIA.IsHit && gridService.IsGameFinished(gridJoueur))
-    {
-        return Results.Ok(new
-        {
-            message = "Tir de l'IA effectué.",
-            hit = shootResultIA.IsHit,
-            isGameFinished = true,
-            winner = "IA"
-        });
-    }
-
+    // 3. Met à jour les grilles masquées après le tir de l'IA
     game.MaskedGridJ1 = gridService.CreateMaskedGrid(game.GridJ1);
     game.MaskedGridJ2 = gridService.CreateMaskedGrid(game.GridJ2);
-    
+
+    // 4. Afficher l'état du jeu
     game.PrintGame();
-    // 3. Retourner les résultats des deux tirs (joueur et IA)
+
+    // 5. Retourner les résultats des deux tirs (joueur et IA)
     return Results.Ok(new
     {
-        message = "Tirs effectués.",
-        joueur = new
-        {
-            hit = shootResult.IsHit,
-            isGameFinished = false,
-            x = request.X,
-            y = request.Y
-        },
-        ia = new
-        {
-            hit = shootResultIA.IsHit,
-            isGameFinished = false,
-            x = xIa,
-            y = yIa
-        },
-        GridJ1 = game.GridJ1,
-        GridJ2 = game.GridJ2,
-        MaskedGridJ1 = game.MaskedGridJ1,
-        MaskedGridJ2 = game.MaskedGridJ2
+        message = "Tirs effectués."
     });
 })
 .WithOpenApi();
+
 
 
 
@@ -187,50 +137,40 @@ static IResult shoot(GridService gridService, Game game,ShootRequest request)
 {
     Console.WriteLine("shoot call");
 
-    // Vérifie si le joueur a bien sélectionné une grille adverse
-    char[][] gridJoueur = null;
-    char[][] gridAdverse = null;
-    if (request.J == 1)
+    char[][] gridJoueur, gridAdverse;
+
+    switch (request.J)
     {
-        gridJoueur = game.GridJ1; 
-        gridAdverse = game.GridJ2; // Le joueur 1 tire sur la grille du joueur 2
-    }
-    else if (request.J == 2)
-    {
-        gridAdverse = game.GridJ1; // Le joueur 2 tire sur la grille du joueur 1
-        gridJoueur = game.GridJ2;
-    }
-    else
-    {
-        return Results.BadRequest(new { message = "Joueur invalide." });
+        case 1:
+            gridJoueur = game.GridJ1;
+            gridAdverse = game.GridJ2;
+            break;
+        case 2:
+            gridJoueur = game.GridJ2; 
+            gridAdverse = game.GridJ1;
+            break;
+        default:
+            return Results.BadRequest(new { message = "Joueur invalide." });
     }
 
-    // Effectue le tir
     var shootResult = gridService.PlayerShoot(gridAdverse, request.X, request.Y);
-    
-    // Si le tir est impossible, on retourne un message approprié
+
     if (!shootResult.CanShoot)
     {
-        return Results.Ok(new { message = "Tir impossible.", shoot = shootResult.CanShoot });
+        return Results.Ok(new { ShootResult = new{shoot = shootResult.CanShoot }, Game = new {}});
     }
 
-    // Vérifie si le jeu est terminé
-    bool gameFinished = false;
-    if (shootResult.IsHit && gridService.IsGameFinished(gridAdverse))
-    {
-        gameFinished = true;
-    }
+    bool gameFinished = shootResult.IsHit && gridService.IsGameFinished(gridAdverse);
 
     game.MaskedGridJ1 = gridService.CreateMaskedGrid(game.GridJ1);
     game.MaskedGridJ2 = gridService.CreateMaskedGrid(game.GridJ2);
 
     game.PrintGame();
+
     
-    // Retourne le résultat du tir
     return Results.Ok(new 
     { 
         Game = new {
-            message = "Tir effectué.", 
             isGameFinished = gameFinished,
             GridJ1 = game.GridJ1,
             GridJ2 = game.GridJ2,
@@ -263,5 +203,12 @@ public class ShootRequest
     public int X { get; set; } // Coordonnée X du tir
     public int Y { get; set; } // Coordonnée Y du tir
     public int J { get; set; } // Joueur qui tir
+}
+
+
+public class ResponseShoot
+{
+    public Game game { get; set; } // Coordonnée X du tir
+    public ShootResult shootResult { get; set; } // Coordonnée Y du tir
 }
 
