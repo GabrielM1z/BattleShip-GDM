@@ -6,6 +6,9 @@ public class GameState
     // Grille de l'adversaire (true = touché, false = raté, null = jamais tiré)
     public bool?[][] MaskedGridJ2 { get; set; }
 
+    // partie commencé ?
+    public bool start = false;
+
     // Initialisation des grilles
     public GameState()
     {
