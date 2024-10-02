@@ -23,7 +23,7 @@ namespace BattleShip.Models
         }
 
         // Méthode pour afficher une grille
-        private void PrintGrid(char[][] gridArray, string gridName)
+        public void PrintGrid(char[][] gridArray, string gridName)
         {
             Console.WriteLine($"Grille : {gridName}");
             Console.WriteLine(new string('-', (gridArray[0].Length * 2) + 1)); 

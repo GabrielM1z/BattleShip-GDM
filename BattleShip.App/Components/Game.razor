@@ -105,7 +105,7 @@
 		var content = new StringContent(jsonSend, Encoding.UTF8, "application/json");
 
 		// on envoie
-		var response = await Http.PostAsync("/shoot", content);
+		var response = await Http.PostAsync("/tour", content);
 
 		// Si on a une réponse en code 200
         if (response.IsSuccessStatusCode)
