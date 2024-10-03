@@ -14,10 +14,13 @@
 </div>
 
 
-
 @if(GameState != null && GameState.start == true)
 {
-    <BattleShip.App.Components.Game></BattleShip.App.Components.Game>
+    <div class="game">
+		<BattleShip.App.Components.Fleet></BattleShip.App.Components.Fleet>
+        <BattleShip.App.Components.Game></BattleShip.App.Components.Game>
+		<BattleShip.App.Components.Logs></BattleShip.App.Components.Logs>
+    </div>
 }
 else {
     <!-- Bouton pour démarrer le jeu -->

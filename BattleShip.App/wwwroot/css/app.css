@@ -133,6 +133,10 @@ div.grids{
 }
 
 
+
+
+
+
 /* Ecran de fin du jeu */
 .end-game-overlay {
     position: absolute; /* Elle est positionnée par rapport à la parent-div */
@@ -149,4 +153,34 @@ div.grids{
     font-size: 2em; /* Taille du texte */
     opacity: 1; /* Initialement invisible */
     transition: opacity 0.5s ease; /* Transition douce */
+}
+
+
+/* Info 1 */
+div.logs {
+    margin-top: 60px;
+    width: 100px;
+    height: 100px;
+    border: #b32121 solid 2px;
+    border-radius: 10px;
+}
+
+
+/* Info 2 */
+div.fleet {
+    margin-top: 60px;
+    width: 100px;
+    height: 100px;
+    border: #c02d76 solid 2px;
+    border-radius: 10px;
+}
+
+
+
+/* Game */
+
+div.game {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
 }

@@ -98,61 +98,61 @@
 		// cas ou il y a un bateau
 		if (grid[x][y] != '\0')
 		{
-			if(maskeGrid[x][y] == null)
+			if(maskeGrid[x][y] == null || maskeGrid[x][y] == true)
 			{
 				// lettre du bateau
 				char letter = grid[x][y];
 
 				// si lettre a gauche et a droite => midle
 				if (y > 0 && y < numberOfColumns-1 && grid[x][y-1] == letter && grid[x][y+1] == letter){
-					imageUrl = "img/middle_boat.png";
+					imageUrl = "img/middle_boat";
 					rotationClass = "rotate-90";
 				}
 				// sinon si lettre a gauche => last
 				else if (y > 0 && grid[x][y-1] == letter){
-					imageUrl = "img/front_boat.png";
+					imageUrl = "img/front_boat";
 					rotationClass = "rotate-90";
 				}
 				// sinon si lettre a droite => first
 				else if (y < numberOfColumns-1 && grid[x][y+1] == letter){
-					imageUrl = "img/back_boat.png";
+					imageUrl = "img/back_boat";
 					rotationClass = "rotate-90";
 				}
 				// si lettre en haut et en bas => midle
 				else if (x > 0 && x < numberOfRows-1 && grid[x-1][y] == letter && grid[x+1][y] == letter){
-					imageUrl = "img/middle_boat.png";
+					imageUrl = "img/middle_boat";
 				}
 				// sinon si lettre en haut => front
 				else if (x > 0 && grid[x-1][y] == letter){
-					imageUrl = "img/back_boat.png";
+					imageUrl = "img/back_boat";
 				}
 				// sinon si lettre en bas => last
 				else if (x < numberOfRows-1 && grid[x+1][y] == letter){
-					imageUrl = "img/front_boat.png";
+					imageUrl = "img/front_boat";
 				}
 				else {
-					imageUrl = "img/single_boat.png";
+					imageUrl = "img/single_boat";
 				}
 			}
-			else if(maskeGrid[x][y] == true)
-			{
-				imageUrl = "img/hit.png";
-			}
 			
-
+			if(maskeGrid[x][y] == true)
+			{
+				imageUrl += "_hit";
+			}
 		}
 		// cas ou il n'y a pas de bateau
 		else {
 
 			if(maskeGrid[x][y] == false)
 			{
-				imageUrl = "img/miss.png";
+				imageUrl = "img/miss";
 			}
 			else {
 				return new MarkupString($"<span></span>");
 			}
 		}
 		
+		imageUrl += ".png";
 		return new MarkupString($"<img src='{imageUrl}' alt='cell-image' class='img-grid {rotationClass}' />");
 	}
 
