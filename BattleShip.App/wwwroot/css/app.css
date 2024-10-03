@@ -127,6 +127,11 @@ div.grids{
 }
 
 
+/* Image bato */
+.rotate-90 {
+    transform: rotate(90deg);
+}
+
 
 /* Ecran de fin du jeu */
 .end-game-overlay {

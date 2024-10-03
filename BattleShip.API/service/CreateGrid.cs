@@ -35,8 +35,7 @@ namespace BattleShip.API.Service
                 new Boat(3, 'B'),
                 new Boat(3, 'C'),
                 new Boat(2, 'D'),
-                new Boat(2, 'E'),
-                new Boat(1, 'F') 
+                new Boat(2, 'E')
             };
             /*/
             var boats = new List<Boat>
