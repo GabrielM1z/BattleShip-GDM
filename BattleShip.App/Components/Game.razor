@@ -96,48 +96,59 @@
 		// cas ou il y a un bateau
 		if (grid[x][y] != '\0')
 		{
-			// lettre du bateau
-			char letter = grid[x][y];
+			if(maskeGrid[x][y] == null)
+			{
+				// lettre du bateau
+				char letter = grid[x][y];
 
-			// si lettre a gauche et a droite => midle
-			if (y > 0 && y < 9 && grid[x][y-1] == letter && grid[x][y+1] == letter){
-				imageUrl = "img/middle_boat.png";
-				rotationClass = "rotate-90";
+				// si lettre a gauche et a droite => midle
+				if (y > 0 && y < 9 && grid[x][y-1] == letter && grid[x][y+1] == letter){
+					imageUrl = "img/middle_boat.png";
+					rotationClass = "rotate-90";
+				}
+				// sinon si lettre a gauche => last
+				else if (y > 0 && grid[x][y-1] == letter){
+					imageUrl = "img/front_boat.png";
+					rotationClass = "rotate-90";
+				}
+				// sinon si lettre a droite => first
+				else if (y < 9 && grid[x][y+1] == letter){
+					imageUrl = "img/back_boat.png";
+					rotationClass = "rotate-90";
+				}
+				// si lettre en haut et en bas => midle
+				else if (x > 0 && x < 9 && grid[x-1][y] == letter && grid[x+1][y] == letter){
+					imageUrl = "img/middle_boat.png";
+				}
+				// sinon si lettre en haut => front
+				else if (x > 0 && grid[x-1][y] == letter){
+					imageUrl = "img/back_boat.png";
+				}
+				// sinon si lettre en bas => last
+				else if (x < 9 && grid[x+1][y] == letter){
+					imageUrl = "img/front_boat.png";
+				}
+				else {
+					imageUrl = "img/single_boat.png";
+				}
 			}
-			// sinon si lettre a gauche => last
-			else if (y > 0 && grid[x][y-1] == letter){
-				imageUrl = "img/front_boat.png";
-				rotationClass = "rotate-90";
-			}
-			// sinon si lettre a droite => first
-			else if (y < 9 && grid[x][y+1] == letter){
-				imageUrl = "img/back_boat.png";
-				rotationClass = "rotate-90";
-			}
-			// si lettre en haut et en bas => midle
-			else if (x > 0 && x < 9 && grid[x-1][y] == letter && grid[x+1][y] == letter){
-				imageUrl = "img/middle_boat.png";
-			}
-			// sinon si lettre en haut => front
-			else if (x > 0 && grid[x-1][y] == letter){
-				imageUrl = "img/back_boat.png";
-			}
-			// sinon si lettre en bas => last
-			else if (x < 9 && grid[x+1][y] == letter){
-				imageUrl = "img/front_boat.png";
-			}
-			else {
-				imageUrl = "img/single_boat.png";
-			}
-
-		
-			if(maskeGrid[x][y] == true){
+			else if(maskeGrid[x][y] == true)
+			{
 				imageUrl = "img/hit.png";
 			}
+			
+
 		}
 		// cas ou il n'y a pas de bateau
 		else {
-			return new MarkupString($"<span></span>");
+
+			if(maskeGrid[x][y] == false)
+			{
+				imageUrl = "img/miss.png";
+			}
+			else {
+				return new MarkupString($"<span></span>");
+			}
 		}
 		
 		return new MarkupString($"<img src='{imageUrl}' alt='cell-image' class='img-grid {rotationClass}' />");
