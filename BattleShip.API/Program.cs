@@ -32,6 +32,9 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 var game = new Game{};
 
+bool isHunting = true;
+(int x, int y)? lastHit = null;
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -82,7 +85,6 @@ app.MapPost("/tour", (GridService gridService, [FromBody] ShootRequest request) 
     {
         var result = okResult.Value;
 
-        // Accéder directement aux propriétés de ShootResult et Game
         bool canShoot = result.shootResult.CanShoot;
         bool isHit = result.shootResult.IsHit;
         bool isGameFinished = result.game.IsGameFinished;
@@ -94,20 +96,13 @@ app.MapPost("/tour", (GridService gridService, [FromBody] ShootRequest request) 
 
     }
 
+    var (xIa, yIa) = GenerateValidIACoordinates(game.MaskedGridJ1);    
+    //var (xIa, yIa) = GenerateValidIACoordinates(game.MaskedGridJ1, isHunting, lastHit);
 
-
-
-
-
-    // 2. Tir de l'IA
-    var (xIa, yIa) = GenerateValidIACoordinates(game.GridJ1);    
-    Console.WriteLine($"Can Shoot: {xIa},{yIa},----");
     var aiShootResult = shoot(gridService, game, new ShootRequest { X = xIa, Y = yIa, J = 2 });
 
-    // 4. Afficher l'état du jeu
     game.PrintGame();
 
-    // 5. Retourner les résultats des deux tirs (joueur et IA)
     return aiShootResult;
 })
 .WithOpenApi();
@@ -117,7 +112,7 @@ app.MapPost("/tour", (GridService gridService, [FromBody] ShootRequest request) 
 
 
 // Générer les coordonnées de tir de l'IA (fonction externe)
-(int, int) GenerateValidIACoordinates(char[][] grid)
+(int, int) GenerateValidIACoordinates(bool?[][] grid)
 {
     Random random = new Random();
     int xIa, yIa;
@@ -127,32 +122,87 @@ app.MapPost("/tour", (GridService gridService, [FromBody] ShootRequest request) 
         xIa = random.Next(grid.Length);  // Génère une coordonnée X
         yIa = random.Next(grid[0].Length);  // Génère une coordonnée Y
     }
-    while (grid[yIa][xIa] == 'X' || grid[yIa][xIa] == 'O'); // Évite les tirs déjà effectués
+    while (grid[yIa][xIa] != null); // Évite les tirs déjà effectués
 
     return (xIa, yIa);
 }
+/*
+(int, int) GenerateValidIACoordinates(bool?[][] grid, bool isHunting, (int x, int y)? lastHit = null)
+{
+    Random random = new Random();
+    int xIa = -1, yIa = -1;
+    if (lastHit != null){
+        var (lastX, lastY) = lastHit.Value;
+        if(grid[lastY][lastX] == true){
+            isHunting = true;
+        }
+    }
+
+    // Phase de ciblage : si l'IA a touché un bateau précédemment, elle cible autour
+    if (!isHunting && lastHit != null)
+    {
+        var (lastX, lastY) = lastHit.Value;
+        var potentialTargets = new List<(int x, int y)>
+        {
+            (lastX - 1, lastY), // Case au-dessus
+            (lastX + 1, lastY), // Case en-dessous
+            (lastX, lastY - 1), // Case à gauche
+            (lastX, lastY + 1)  // Case à droite
+        };
+        
+        // Filtrer les cases valides (dans la grille et non déjà visées)
+        potentialTargets = potentialTargets
+            .Where(coord => coord.x >= 0 && coord.x < grid.Length && coord.y >= 0 && coord.y < grid[0].Length)
+            .Where(coord => grid[coord.y][coord.x] == null) // Non encore visée
+            .ToList();
+
+        // Si on trouve des cibles valides, on en sélectionne une au hasard
+        if (potentialTargets.Count > 0)
+        {
+            var target = potentialTargets[random.Next(potentialTargets.Count)];
+            return target;
+        }
+    }
+
+    // Phase de chasse : si l'IA n'a pas encore trouvé de bateau ou a coulé le bateau, elle chasse
+    do
+    {
+        // Utiliser un motif en damier pour maximiser les chances
+        xIa = random.Next(grid.Length);
+        yIa = random.Next(grid[0].Length);
+        
+        // Motif en damier : tire seulement sur les cases où (xIa + yIa) est pair
+    } while (grid[yIa][xIa] != null || (xIa + yIa) % 2 != 0);
+
+    
+    return (xIa, yIa);
+}
+*/
 
 static IResult shoot(GridService gridService, Game game, ShootRequest request)
 {
     Console.WriteLine("shoot call");
 
     char[][] gridJoueur, gridAdverse;
+    bool?[][] gridAdverseMasked;
 
     switch (request.J)
     {
         case 1:
             gridJoueur = game.GridJ1;
             gridAdverse = game.GridJ2;
+            gridAdverseMasked = game.MaskedGridJ2;
             break;
         case 2:
             gridJoueur = game.GridJ2; 
             gridAdverse = game.GridJ1;
+            gridAdverseMasked = game.MaskedGridJ1;
             break;
         default:
             return Results.BadRequest(new { message = "Joueur invalide." });
     }
 
-    var shootResult = gridService.PlayerShoot(gridAdverse, request.X, request.Y);
+    var shootResult = gridService.PlayerShoot(gridAdverse, gridAdverseMasked, request.X, request.Y);
 
     if (!shootResult.CanShoot)
     {
@@ -172,8 +222,8 @@ static IResult shoot(GridService gridService, Game game, ShootRequest request)
 
     bool gameFinished = shootResult.IsHit && gridService.IsGameFinished(gridAdverse);
 
-    game.MaskedGridJ1 = gridService.CreateMaskedGrid(game.GridJ1);
-    game.MaskedGridJ2 = gridService.CreateMaskedGrid(game.GridJ2);
+    //game.MaskedGridJ1 = gridService.CreateMaskedGrid(game.GridJ1);
+    //game.MaskedGridJ2 = gridService.CreateMaskedGrid(game.GridJ2);
 
     game.PrintGame();
 

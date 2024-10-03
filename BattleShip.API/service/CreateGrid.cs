@@ -134,31 +134,34 @@ namespace BattleShip.API.Service
 
 
 
-        public ShootResult PlayerShoot(char[][] targetGrid, int x, int y)
+        public ShootResult PlayerShoot(char[][] targetGrid, bool?[][] maskedGrid, int x, int y)
         {
+            // Vérification des limites de la grille
             if (x < 0 || x >= targetGrid.Length || y < 0 || y >= targetGrid[0].Length)
             {
                 throw new ArgumentOutOfRangeException("Coordinates are out of bounds.");
             }
 
-            if (targetGrid[y][x] == 'X' || targetGrid[y][x] == 'O')
+            // Vérification si la case a déjà été visée
+            if (maskedGrid[y][x].HasValue)
             {
                 return new ShootResult { CanShoot = false };
             }
 
+            // Vérification s'il y a un bateau sur la grille normale
             var hit = targetGrid[y][x] != '\0';
-            if (hit)
-            {
-                targetGrid[y][x] = 'X';
-            }
-            else
-            {
-                targetGrid[y][x] = 'O';
-            }
 
-            Console.WriteLine("shoot", targetGrid[y][x]);
+
+            // Mise à jour de la grille masquée (true si touché, false si manqué)
+            maskedGrid[y][x] = hit ? true : false;
+
+            // Affichage de l'état du coup
+            Console.WriteLine($"Shoot result at ({x}, {y}): {(hit ? "Hit" : "Miss")}");
+
+            // Retourne le résultat du tir
             return new ShootResult { CanShoot = true, IsHit = hit };
         }
+
 
         public bool IsGameFinished(char[][] grid)
         {

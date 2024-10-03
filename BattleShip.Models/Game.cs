@@ -57,7 +57,7 @@ namespace BattleShip.Models
                 Console.Write("|");
                 for (int j = 0; j < maskedGrid[i].Length; j++)
                 {
-                    Console.WriteLine($"{i},{j},{maskedGrid[i][j]}");
+                    //Console.WriteLine($"{i},{j},{maskedGrid[i][j]}");
                     /*
                     if (maskedGrid[i][j] == true)
                     {
