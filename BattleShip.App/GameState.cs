@@ -14,21 +14,21 @@ public class GameState
     public bool end = false;
 
     // Initialisation des grilles
-    public GameState()
+    public GameState(int size)
     {
         // Initialiser les grilles avec des tableaux de 10x10
-        GridJ1 = new char[10][];
-        MaskedGridJ1 = new bool?[10][];
-        MaskedGridJ2 = new bool?[10][];
+        GridJ1 = new char[size][];
+        MaskedGridJ1 = new bool?[size][];
+        MaskedGridJ2 = new bool?[size][];
         
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < size; i++)
         {
-            GridJ1[i] = new char[10];
-            MaskedGridJ1[i] = new bool?[10];
-            MaskedGridJ2[i] = new bool?[10];
+            GridJ1[i] = new char[size];
+            MaskedGridJ1[i] = new bool?[size];
+            MaskedGridJ2[i] = new bool?[size];
             
             // Remplir la grille du joueur avec des espaces vides ' '
-            for (int j = 0; j < 10; j++)
+            for (int j = 0; j < size; j++)
             {
                 GridJ1[i][j] = '\0'; // ou ' ' si tu veux un espace vide
                 MaskedGridJ1[i][j] = null; // Pas encore de tir sur cette grille

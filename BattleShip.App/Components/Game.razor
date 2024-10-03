@@ -14,17 +14,17 @@
 			<h3>Opponent Grid</h3>
 		</div>
 		<div class="grid-container">
-			@for (int row = 0; row < 10; row++)
+			@if (GameState.MaskedGridJ2 != null)
 			{
-				var currentRow = row;
-				<div class="grid-row pos-{row}">
-					@for (int col = 0; col < 10; col++)
-					{
-						var currentCol = col;
-						<div class="grid-item pos-{row}-{col} pos-{col}">
-							<div class="grid-item pos-{row}-{col} pos-{col}" @onclick="() => Shoot(currentRow, currentCol)">
-								@if (GameState.MaskedGridJ2 != null)
-								{
+				@for (int row = 0; row < GameState.MaskedGridJ2.Length; row++)
+				{
+					var currentRow = row;
+					<div class="grid-row pos-{row}">
+						@for (int col = 0; col < GameState.MaskedGridJ2[0].Length; col++)
+						{
+							var currentCol = col;
+							<div class="grid-item pos-{row}-{col} pos-{col}">
+								<div class="grid-item pos-{row}-{col} pos-{col}" @onclick="() => Shoot(currentRow, currentCol)">
 									@if (GameState.MaskedGridJ2[row][col] == true)
 									{
 										<img src="img/hit.png" alt="Touché" class="img-target-grid" />
@@ -33,11 +33,11 @@
 									{
 										<img src="img/miss.png" alt="Raté" class="img-target-grid" />
 									}
-								}
+								</div>
 							</div>
-						</div>
-					}
-				</div>
+						}
+					</div>
+				}
 			}
 		</div>
     </div>
@@ -50,22 +50,19 @@
 			<h3>Our Grid</h3>
 		</div>
 		<div class="grid-container">
-			@for (int row = 0; row < 10; row++)
+			@if (GameState.GridJ1 != null)
 			{
-				<div class="grid-row pos-{row}">
-					@for (int col = 0; col < 10; col++)
-					{
-						<div class="grid-item pos-{row}-{col} pos-{col}">
-							@if (GameState.GridJ1 != null)
-							{
+				@for (int row = 0; row < GameState.GridJ1.Length; row++)
+				{
+					<div class="grid-row pos-{row}">
+						@for (int col = 0; col < GameState.GridJ1[0].Length; col++)
+						{
+							<div class="grid-item pos-{row}-{col} pos-{col}">
 								@GetImageForCell(GameState.GridJ1,GameState.MaskedGridJ1, row, col)
-							}
-							else {
-								<span>?</span>
-							}
-						</div>
-					}
-				</div>
+							</div>
+						}
+					</div>
+				}
 			}
 		</div>
     </div>
@@ -93,6 +90,11 @@
 		string imageUrl = "";
 		string rotationClass = "";
 
+		// taille de la grille
+		int numberOfRows = grid.Length;
+		int numberOfColumns = grid[0].Length;
+
+
 		// cas ou il y a un bateau
 		if (grid[x][y] != '\0')
 		{
@@ -102,7 +104,7 @@
 				char letter = grid[x][y];
 
 				// si lettre a gauche et a droite => midle
-				if (y > 0 && y < 9 && grid[x][y-1] == letter && grid[x][y+1] == letter){
+				if (y > 0 && y < numberOfColumns-1 && grid[x][y-1] == letter && grid[x][y+1] == letter){
 					imageUrl = "img/middle_boat.png";
 					rotationClass = "rotate-90";
 				}
@@ -112,12 +114,12 @@
 					rotationClass = "rotate-90";
 				}
 				// sinon si lettre a droite => first
-				else if (y < 9 && grid[x][y+1] == letter){
+				else if (y < numberOfColumns-1 && grid[x][y+1] == letter){
 					imageUrl = "img/back_boat.png";
 					rotationClass = "rotate-90";
 				}
 				// si lettre en haut et en bas => midle
-				else if (x > 0 && x < 9 && grid[x-1][y] == letter && grid[x+1][y] == letter){
+				else if (x > 0 && x < numberOfRows-1 && grid[x-1][y] == letter && grid[x+1][y] == letter){
 					imageUrl = "img/middle_boat.png";
 				}
 				// sinon si lettre en haut => front
@@ -125,7 +127,7 @@
 					imageUrl = "img/back_boat.png";
 				}
 				// sinon si lettre en bas => last
-				else if (x < 9 && grid[x+1][y] == letter){
+				else if (x < numberOfRows-1 && grid[x+1][y] == letter){
 					imageUrl = "img/front_boat.png";
 				}
 				else {
