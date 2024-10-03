@@ -9,6 +9,7 @@ namespace BattleShip.Models
         public bool?[][] MaskedGridJ1 { get; set; }
         public bool?[][] MaskedGridJ2 { get; set; }
         public bool IsGameFinished { get; set ;}
+        public string GameMode { get; set;}
 
         // Méthode pour afficher les informations du jeu
         public void PrintGame()

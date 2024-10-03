@@ -29,14 +29,6 @@ namespace BattleShip.API.Service
         public void PlaceBoat(Grid grid)
         {
             //*
-            var boats = new List<Boat>
-            {
-                new Boat(4, 'A'),
-                new Boat(3, 'B'),
-                new Boat(3, 'C'),
-                new Boat(2, 'D'),
-                new Boat(2, 'E')
-            };
             /*/
             var boats = new List<Boat>
             {
@@ -46,7 +38,14 @@ namespace BattleShip.API.Service
                 new Boat(1, 'F')
             };
             //*/
-
+            var boats = new List<Boat>
+            {
+                new Boat(4, 'A'),
+                new Boat(3, 'B'),
+                new Boat(3, 'C'),
+                new Boat(2, 'D'),
+                new Boat(2, 'E')
+            };
             foreach (var boat in boats)
             {
                 bool placed = false;
@@ -144,7 +143,7 @@ namespace BattleShip.API.Service
             // Vérification si la case a déjà été visée
             if (maskedGrid[y][x].HasValue)
             {
-                return new ShootResult { CanShoot = false };
+                return new ShootResult { CanShoot = false , IsHit = false};
             }
 
             // Vérification s'il y a un bateau sur la grille normale
@@ -162,21 +161,28 @@ namespace BattleShip.API.Service
         }
 
 
-        public bool IsGameFinished(char[][] grid)
+        public bool IsGameFinished(char[][] grid, bool?[][] maskedGrid)
         {
-            foreach (var row in grid)
+            // Parcourt chaque ligne de la grille normale
+            for (int i = 0; i < grid.Length; i++)
             {
-                foreach (var cell in row)
+                // Parcourt chaque cellule de la ligne
+                for (int j = 0; j < grid[i].Length; j++)
                 {
                     // Vérifie si le caractère est entre 'A' (65) et 'F' (70)
-                    if (cell >= 65 && cell <= 70) // plus simple a check selon moi
+                    if (grid[i][j] >= 'A' && grid[i][j] <= 'F')
                     {
-                        return false; // ça joue encore
+                        // Vérifie que la cellule correspondante dans la grille masquée n'est pas true
+                        if (maskedGrid[i][j] != true)
+                        {
+                            return false; // Le jeu continue car un bateau est encore présent et non touché
+                        }
                     }
                 }
             }
-            return true;
+            return true; // Tous les bateaux ont été touchés
         }
+
 
 
     }
