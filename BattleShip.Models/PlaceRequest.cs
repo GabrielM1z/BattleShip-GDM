@@ -1,7 +1,9 @@
-public class PlaceRequest
+namespace BattleShip.Models
 {
-    public int GridSize { get; set; }
-    public string LevelDifficulty { get; set; }
-    public List<Boat>? Boats { get; set; }
-
+    public class PlaceRequest
+    {
+        public int GridSize { get; set; }
+        public string LevelDifficulty { get; set; }
+        public List<Boat>? Boats { get; set; }
+    }
 }

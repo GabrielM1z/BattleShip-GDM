@@ -1,6 +1,7 @@
 ﻿@page "/"
 
 @using BattleShip.Models
+@using System.Text
 
 @inject GameState GameState  // Injecte le singleton GameState
 @inject HttpClient Http      // Injecte le client HTTP pour appeler l'API
@@ -16,6 +17,8 @@
 </div>
 
 
+
+
 @if(GameState != null && GameState.start == true)
 {
 	<div class="start">
@@ -29,6 +32,35 @@
     </div>
 }
 else {
+
+	@* Selection des niveaux *@
+	<div class="selection-level">
+
+		<div class="sub-selection">
+			<div class="title-selection">
+				<p>PvE</p>
+			</div>
+			<div class="btn-selection">
+				<button class="btn btn-outline-info">Level 1</button>
+				<button class="btn btn-outline-info">Level 2</button>
+				<button class="btn btn-outline-info">Level 3</button>
+				<button class="btn btn-outline-info">Level 4</button>
+			</div>
+		</div>
+
+		<div class="sub-selection">
+			<div class="title-selection">
+				<p>PvP</p>
+			</div>
+			<div class="btn-selection">
+				<button class="btn btn-outline-info">Petite Grille (8x8)</button>
+				<button class="btn btn-outline-info">Moyenne Grille (10x10)</button>
+				<button class="btn btn-outline-info">Grosse Grille (12*12)</button>
+			</div>
+		</div>
+		
+	</div>
+
 	<div class="start">
 		<button class="btn btn-primary" @onclick="StartGame">Start</button>
 	</div>
@@ -40,7 +72,20 @@ else {
 @code {
     private async Task StartGame()
     {		
-        var response = await Http.GetAsync("/start");
+
+		var placeRequest = new BattleShip.Models.PlaceRequest
+		{
+			GridSize = 10,
+			LevelDifficulty = "IA_2",
+			Boats = []
+		};
+
+		// on serialize en JSON
+		var jsonSend = System.Text.Json.JsonSerializer.Serialize(placeRequest);
+		var content = new StringContent(jsonSend, Encoding.UTF8, "application/json");
+
+		// on envoie
+		var response = await Http.PostAsync("/start", content);
 		Console.WriteLine(response);
 
         if (response.IsSuccessStatusCode)

@@ -84,7 +84,7 @@ div.title{
     justify-content: center;
     border-radius: 10px;
     height: 100px;
-    margin: 5px;
+    margin: 20px;
 }
 
 div.title>p {
@@ -92,6 +92,11 @@ div.title>p {
     font-size: xx-large;
     font-weight: bold;
     margin-bottom: 5px;
+}
+
+/* body */
+body {
+    background-color: #001020;
 }
 
 /* btn start */
@@ -149,10 +154,6 @@ div.grids{
 }
 
 
-
-
-
-
 /* Ecran de fin du jeu */
 .end-game-overlay {
     position: absolute; /* Elle est positionnée par rapport à la parent-div */
@@ -191,12 +192,62 @@ div.fleet {
     border-radius: 10px;
 }
 
-
-
 /* Game */
-
 div.game {
     display: flex;
     flex-direction: row;
     justify-content: center;
+}
+
+
+/* Selection des niveaux */
+div.selection-level {
+    display: flex;
+    flex-direction: column;
+    align-content: baseline;
+    width: 300px;
+    margin: auto;
+    margin-top: 50px;
+    background-color: #00305e;
+    padding: 10px;
+    border: #9ff2fd solid 2px;
+    border-radius: 20px;
+}
+
+div.selection-level>p {
+    margin-bottom: 0;
+    align-self: center;
+}
+
+div.title-selection {
+    display: flex;
+    border: #1b6ec2 solid 2px;
+    background-color: #AAEEFF;
+    justify-content: center;
+    border-radius: 10px;
+    height: 50px;
+    margin: 5px;
+}
+
+div.title-selection>p {
+    align-self: center;
+    font-size: xx-large;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+div.sub-selection {
+    display: flex;
+    flex-direction: column;
+}
+
+div.sub-selection>div.btn-selection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+div.sub-selection>div.btn-selection>button {
+    width: 90%;
+    margin: 5px 0;
 }

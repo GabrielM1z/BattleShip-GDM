@@ -1,0 +1,35 @@
+
+
+@* Notre grille de placement *@
+<div class="placement-grid">
+    <div class="sub-title">
+        <h3>Placement</h3>
+    </div>
+    <div class="grid-container">
+        @if (GridSize != 0)
+        {
+            @for (int row = 0; row < GridSize; row++)
+            {
+                var currentRow = row;
+                <div class="grid-row pos-{row}">
+                    @for (int col = 0; col < GridSize; col++)
+                    {
+                        var currentCol = col;
+                        <div class="grid-item pos-{row}-{col} pos-{col}">
+                            <div class="grid-item pos-{row}-{col} pos-{col}">
+                                
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        }
+    </div>
+</div>
+
+
+@code {
+
+    [Parameter]
+    public int GridSize { get; set; }
+}
