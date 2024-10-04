@@ -30,10 +30,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+var fleet = new Fleet();
 var game = new Game{};
-
-bool isHunting = true;
-(int x, int y)? lastHit = null;
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -48,7 +46,18 @@ app.UseCors("AllowBlazorClient");
 app.MapGet("/", () => "Hello World")
 .WithOpenApi();
 
-// Route pour start la game
+app.MapGet("/place", () =>
+{
+    fleet = new Fleet();
+    fleet.AddBoat(new Boat(2, 'A'));
+    fleet.AddBoat(new Boat(3, 'B'));
+    fleet.AddBoat(new Boat(3, 'C'));
+    fleet.AddBoat(new Boat(4, 'D'));
+    fleet.AddBoat(new Boat(5, 'E'));
+
+    return Results.Ok(fleet);
+}).WithOpenApi();
+
 app.MapGet("/start", (GridService gridService) =>
 {
     var gameId = Guid.NewGuid();

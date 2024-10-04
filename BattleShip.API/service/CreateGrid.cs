@@ -61,9 +61,9 @@ namespace BattleShip.API.Service
                         for (int i = 0; i < boat.Size; i++)
                         {
                             if (horizontal)
-                                grid.GridArray[row][col + i] = boat.Symbol; // Placer horizontalement
-                            else
                                 grid.GridArray[row + i][col] = boat.Symbol; // Placer verticalement
+                            else
+                                grid.GridArray[row][col + i] = boat.Symbol; // Placer horizontalement
                         }
                         placed = true;
                     }
