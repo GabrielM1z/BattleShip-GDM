@@ -40,6 +40,15 @@
 				}
 			}
 		</div>
+
+		@* Si le jeu est fini, on couvre l'écran *@
+		@if(GameState.end && GameState.start == true)
+		{
+			<div class="end-game-overlay" id="endGameOverlay">
+				<p>Fin du Jeu</p>
+				@* <button @onclick="">Démarrer un nouveau jeu</button> *@
+			</div>
+		}
     </div>
 
 
@@ -68,14 +77,7 @@
     </div>
 
 
-	@* Si le jeu est fini, on couvre l'écran *@
-	@if(GameState.end)
-	{
-		<div class="end-game-overlay" id="endGameOverlay">
-			<p>Fin du Jeu</p>
-			@* <button @onclick="">Démarrer un nouveau jeu</button> *@
-		</div>
-	}
+	
 
 </div>
 

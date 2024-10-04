@@ -69,15 +69,44 @@ else {
 	private async Task Menu()
     {
 		GameState.start = false;
+		GameState.end = false;
 	}
 
     private async Task StartGame(bool pve, int level)
-    {		
+    {	
+		// on adapte la taille de la grille et la difficulté de l'ia
+		string lvlDifficulty = "";
+		int gridSize = 10;
+		if (pve){
+			lvlDifficulty = "IA_"+level;
 
+			switch(level){
+				case 1:
+					gridSize = 8;
+					break;
+				case 2:
+					gridSize = 8;
+					break;
+				case 3:
+					gridSize = 10;
+					break;
+				case 4:
+					gridSize = 10;
+					break;
+				default:
+					gridSize = 10;
+					break;
+			}
+		}
+
+		Console.WriteLine(gridSize);
+		Console.WriteLine(lvlDifficulty);
+
+		// Ce qu'on va send
 		var placeRequest = new BattleShip.Models.PlaceRequest
 		{
-			GridSize = 10,
-			LevelDifficulty = "IA_2",
+			GridSize = gridSize,
+			LevelDifficulty = lvlDifficulty,
 			Boats = []
 		};
 
