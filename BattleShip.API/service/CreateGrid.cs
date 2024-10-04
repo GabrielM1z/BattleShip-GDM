@@ -6,11 +6,11 @@ namespace BattleShip.API.Service
     {
         private Random _random = new Random(); // Pour la génération aléatoire
         
-        public Grid CreateGrid()
+        public Grid CreateGrid(int GridSize, List<Boat> boats)
         {
-            var grid = new Grid(10); // Crée une grille de 10x10
+            var grid = new Grid(GridSize); // Crée une grille de 10x10
             InitializeGrid(grid);
-            PlaceBoat(grid);
+            PlaceBoat(grid, boats);
             return grid;
         }
 
@@ -26,50 +26,61 @@ namespace BattleShip.API.Service
         }
 
 
-        public void PlaceBoat(Grid grid)
+        public void PlaceBoat(Grid grid, List<Boat> boats)
         {
-            //*
-            /*/
-            var boats = new List<Boat>
-            {
-                new Boat(1, 'A'),
-                new Boat(3, 'B'),
-                new Boat(3, 'C'),
-                new Boat(1, 'F')
-            };
-            //*/
-            var boats = new List<Boat>
-            {
-                new Boat(4, 'A'),
-                new Boat(3, 'B'),
-                new Boat(3, 'C'),
-                new Boat(2, 'D'),
-                new Boat(2, 'E')
-            };
             foreach (var boat in boats)
             {
                 bool placed = false;
 
-                while (!placed)
+                // Vérifie si les coordonnées sont spécifiées
+                if (boat.X != -1 && boat.Y != -1) // Si les coordonnées sont spécifiées
                 {
-                    bool horizontal = _random.Next(2) == 0; // Choisir aléatoirement horizontal ou vertical
-                    int row = _random.Next(grid.Size);
-                    int col = _random.Next(grid.Size);
-
-                    if (CanPlaceBoat(grid, boat, row, col, horizontal))
+                    int row = boat.Y;
+                    int col = boat.Y;
+                    // Vérifie si le placement est valide
+                    if (CanPlaceBoat(grid, boat, row, col, boat.Horizontal))
                     {
                         for (int i = 0; i < boat.Size; i++)
                         {
-                            if (horizontal)
-                                grid.GridArray[row + i][col] = boat.Symbol; // Placer verticalement
-                            else
+                            if (boat.Horizontal)
                                 grid.GridArray[row][col + i] = boat.Symbol; // Placer horizontalement
+                            else
+                                grid.GridArray[row + i][col] = boat.Symbol; // Placer verticalement
                         }
                         placed = true;
+                    }
+                    else
+                    {
+                        throw new Exception($"Cannot place boat {boat.Symbol} at specified coordinates.");
+                    }
+                }
+
+                // Si le bateau n'est pas encore placé, effectue un placement aléatoire
+                if (!placed)
+                {
+                    while (!placed)
+                    {
+                        bool horizontal = _random.Next(2) == 0; // Choisir aléatoirement horizontal ou vertical
+                        int row = _random.Next(grid.Size);
+                        int col = _random.Next(grid.Size);
+
+                        if (CanPlaceBoat(grid, boat, row, col, horizontal))
+                        {
+                            for (int i = 0; i < boat.Size; i++)
+                            {
+                                if (horizontal)
+                                    grid.GridArray[row][col + i] = boat.Symbol; // Placer horizontalement
+                                else
+                                    grid.GridArray[row + i][col] = boat.Symbol; // Placer verticalement
+                            }
+                            placed = true;
+                        }
                     }
                 }
             }
         }
+
+
 
         
 

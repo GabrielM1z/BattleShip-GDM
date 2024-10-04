@@ -30,7 +30,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-var fleet = new Fleet();
 var game = new Game{};
 
 // Configure the HTTP request pipeline.
@@ -48,22 +47,24 @@ app.MapGet("/", () => "Hello World")
 
 app.MapGet("/place", () =>
 {
-    fleet = new Fleet();
-    fleet.AddBoat(new Boat(2, 'A'));
-    fleet.AddBoat(new Boat(3, 'B'));
-    fleet.AddBoat(new Boat(3, 'C'));
-    fleet.AddBoat(new Boat(4, 'D'));
-    fleet.AddBoat(new Boat(5, 'E'));
-
-    return Results.Ok(fleet);
+    Fleet fleet = new Fleet(true);
+    var boats = fleet.GetBoats();
+    return Results.Ok(boats);
 }).WithOpenApi();
 
-app.MapGet("/start", (GridService gridService) =>
+app.MapPost("/start", (GridService gridService, [FromBody] PlaceRequest request) =>
 {
     var gameId = Guid.NewGuid();
-    
-    Grid gridJ1 = gridService.CreateGrid();
-    Grid gridJ2 = gridService.CreateGrid();
+    int gridSize = request.GridSize;
+
+    Fleet boatsJ1 = new Fleet(true);
+    if(request.Boats.Count > 0){
+        boatsJ1.Boats = request.Boats;
+    }
+    Fleet boatsJ2 = new Fleet(true); // Créez une flotte aléatoire pour le joueur 2
+
+    Grid gridJ1 = gridService.CreateGrid(gridSize, boatsJ1.GetBoats());
+    Grid gridJ2 = gridService.CreateGrid(gridSize, boatsJ2.GetBoats());
 
     var maskedJ1 = gridService.CreateMaskedGrid(gridJ1.GridArray);
     var maskedJ2 = gridService.CreateMaskedGrid(gridJ2.GridArray);
@@ -78,7 +79,15 @@ app.MapGet("/start", (GridService gridService) =>
 
     game.PrintGame();
 
-    return Results.Ok(new {Id = game.Id,IsGameFinished = game.IsGameFinished, GridJ1 = game.GridJ1, GridJ2 = game.GridJ2, MaskedGridJ1 = maskedJ1, MaskedGridJ2 = maskedJ2});
+    return Results.Ok(new
+    {
+        Id = game.Id,
+        IsGameFinished = game.IsGameFinished,
+        GridJ1 = game.GridJ1,
+        GridJ2 = game.GridJ2,
+        MaskedGridJ1 = maskedJ1,
+        MaskedGridJ2 = maskedJ2
+    });
 })
 .WithOpenApi();
 
@@ -254,10 +263,16 @@ app.MapPost("/shoot", (GridService gridService, [FromBody] ShootRequest request)
 
 app.Run();
 
-// Classe ShootRequest
 public class ShootRequest
 {
     public int X { get; set; } // Coordonnée X du tir
     public int Y { get; set; } // Coordonnée Y du tir
     public int J { get; set; } // Joueur qui tir
+}
+
+public class PlaceRequest
+{
+    public int GridSize { get; set; } // Taille de la grille
+    public List<Boat>? Boats { get; set; }   // Flotte de bateaux
+
 }

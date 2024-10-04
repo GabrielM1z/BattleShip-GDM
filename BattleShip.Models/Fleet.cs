@@ -1,22 +1,22 @@
 public class Fleet
 {
-    public List<Boat> Boats { get; }
+    public List<Boat> Boats { get; set; }
 
-    public Fleet()
+    public Fleet(bool init)
     {
         Boats = new List<Boat>();
-        InitializeBoats(); // Appelle la méthode pour initialiser les bateaux
+        if(init)
+            InitializeBoats(); // Appelle la méthode pour initialiser les bateaux
     }
 
     // Méthode pour ajouter des bateaux à la flotte
-    private void InitializeBoats()
+    public void InitializeBoats()
     {
-        AddBoat(new Boat(1, 2, 'A'));
-        AddBoat(new Boat(2, 3, 'B'));
-        AddBoat(new Boat(3, 3, 'C'));
-        AddBoat(new Boat(4, 4, 'D'));
-        AddBoat(new Boat(5, 5, 'E'));
-        
+        AddBoat(new Boat(1, 2, 'A')); // Bateau de taille 2
+        AddBoat(new Boat(2, 3, 'B')); // Bateau de taille 3
+        AddBoat(new Boat(3, 3, 'C')); // Bateau de taille 3
+        AddBoat(new Boat(4, 4, 'D')); // Bateau de taille 4
+        AddBoat(new Boat(5, 5, 'E')); // Bateau de taille 5
     }
 
     public void AddBoat(Boat boat)
