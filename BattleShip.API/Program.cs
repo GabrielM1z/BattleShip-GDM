@@ -62,7 +62,7 @@ app.MapPost("/start", (GridService gridService, [FromBody] PlaceRequest request)
     if(request.Boats.Count > 0){
         boatsJ1.Boats = request.Boats;
     }
-    Fleet boatsJ2 = new Fleet(true); // Créez une flotte aléatoire pour le joueur 2
+    Fleet boatsJ2 = new Fleet(true);
 
     Grid gridJ1 = gridService.CreateGrid(gridSize, boatsJ1.GetBoats());
     Grid gridJ2 = gridService.CreateGrid(gridSize, boatsJ2.GetBoats());
@@ -77,6 +77,8 @@ app.MapPost("/start", (GridService gridService, [FromBody] PlaceRequest request)
     game.MaskedGridJ1 = maskedJ1;
     game.MaskedGridJ2 = maskedJ2;
     game.GameMode = level;
+    game.flettJ1 = boatsJ1;
+    game.flettJ2 = boatsJ2;
 
     game.PrintGame();
 
@@ -205,6 +207,9 @@ static IResult shoot(GridService gridService, Game game, ShootRequest request)
         game.PrintGame();
     }
 
+    game.flettJ1.UpdateBoats(game.GridJ1, game.MaskedGridJ1);
+    game.flettJ2.UpdateBoats(game.GridJ2, game.MaskedGridJ2);
+
     if (request.J == 1)
     {
         shootResultJ1 = new GameShootResponse
@@ -215,7 +220,9 @@ static IResult shoot(GridService gridService, Game game, ShootRequest request)
                 GridJ1 = game.GridJ1,
                 GridJ2 = game.GridJ2,
                 MaskedGridJ1 = game.MaskedGridJ1,
-                MaskedGridJ2 = game.MaskedGridJ2
+                MaskedGridJ2 = game.MaskedGridJ2,
+                flettJ1 = game.flettJ1,
+                flettJ2 = game.flettJ2
             },
             shootResultJ1 = new ShootResult
             {
@@ -235,7 +242,9 @@ static IResult shoot(GridService gridService, Game game, ShootRequest request)
                 GridJ1 = game.GridJ1,
                 GridJ2 = game.GridJ2,
                 MaskedGridJ1 = game.MaskedGridJ1,
-                MaskedGridJ2 = game.MaskedGridJ2
+                MaskedGridJ2 = game.MaskedGridJ2,
+                flettJ1 = game.flettJ1,
+                flettJ2 = game.flettJ2
             },
             shootResultJ2 = new ShootResult
             {

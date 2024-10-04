@@ -1,3 +1,5 @@
+using BattleShip.Models;
+
 public class Fleet
 {
     public List<Boat> Boats { get; set; }
@@ -29,4 +31,35 @@ public class Fleet
     {
         return Boats; // Retourne la liste des bateaux
     }
+    public void UpdateBoats(char[][] Grid, bool?[][] masked)
+    {
+        if (masked == null) return; // Si la grille masked est null, on ne fait rien
+        
+        foreach (var boat in Boats)
+        {
+            bool isSunk = false; // Supposons que le bateau est touché complètement
+
+            for (int i = 0; i < Grid.Length; i++) // Parcourt les lignes de la grille
+            {
+                for (int j = 0; j < Grid[i].Length; j++) // Parcourt les colonnes de la grille
+                {
+                    // Si la case actuelle contient le caractère du bateau
+                    if (Grid[i][j] == boat.Symbol)
+                    {
+                        // Si masked à cet emplacement est faux, le bateau n'est pas encore complètement touché
+                        if (masked[i][j] != true)
+                        {
+                            Console.WriteLine($"syb={boat.Symbol},i={i},j={j},grid={Grid[i][j]}");
+                            isSunk = true;
+                            break; // Pas besoin de continuer à vérifier, ce bateau n'est pas coulé
+                        }
+                    }
+                }
+            }
+            Console.WriteLine($"syb={boat.Symbol},R = {isSunk}");
+            // Met à jour l'état du bateau (par exemple, définir une propriété `IsSunk`)
+            boat.IsAlive = isSunk; // On suppose que `Boat` a une propriété `IsSunk`
+        }
+    }
+
 }

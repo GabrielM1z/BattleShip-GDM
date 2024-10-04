@@ -36,7 +36,7 @@ namespace BattleShip.API.Service
                 if (boat.X != -1 && boat.Y != -1) // Si les coordonnées sont spécifiées
                 {
                     int row = boat.Y;
-                    int col = boat.Y;
+                    int col = boat.X;
                     // Vérifie si le placement est valide
                     if (CanPlaceBoat(grid, boat, row, col, boat.Horizontal))
                     {
@@ -63,7 +63,8 @@ namespace BattleShip.API.Service
                         bool horizontal = _random.Next(2) == 0; // Choisir aléatoirement horizontal ou vertical
                         int row = _random.Next(grid.Size);
                         int col = _random.Next(grid.Size);
-
+                        boat.Y = row;
+                        boat.X = col;
                         if (CanPlaceBoat(grid, boat, row, col, horizontal))
                         {
                             for (int i = 0; i < boat.Size; i++)
