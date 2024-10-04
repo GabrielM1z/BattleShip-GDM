@@ -10,12 +10,18 @@
 <PageTitle>Battle Ship</PageTitle>
 
 <div class="title">
-    <h1>Battle Ship</h1>
+    <p>
+		BattleShip
+	</p>
 </div>
 
 
 @if(GameState != null && GameState.start == true)
 {
+	<div class="start">
+		<button class="btn btn-primary" @onclick="StartGame">Restart</button>
+	</div>
+
     <div class="game">
 		<BattleShip.App.Components.Fleet></BattleShip.App.Components.Fleet>
         <BattleShip.App.Components.Game></BattleShip.App.Components.Game>
@@ -23,8 +29,9 @@
     </div>
 }
 else {
-    <!-- Bouton pour démarrer le jeu -->
-    <button @onclick="StartGame">Démarrer un nouveau jeu</button>
+	<div class="start">
+		<button class="btn btn-primary" @onclick="StartGame">Start</button>
+	</div>
 }
 
 
@@ -61,6 +68,8 @@ else {
                     GameState.MaskedGridJ1 = gridsResponse.MaskedGridJ1;
 					GameState.MaskedGridJ2 = gridsResponse.MaskedGridJ2;
                     GameState.start = true;
+
+					GameState.NotifyStateChanged();
 				}
             }
         }

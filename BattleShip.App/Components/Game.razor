@@ -84,6 +84,16 @@
 
 @code {
 
+	protected override void OnInitialized()
+    {
+        GameState.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        GameState.OnChange -= StateHasChanged;
+    }
+
 	private MarkupString GetImageForCell(char[][] grid, bool?[][] maskeGrid, int x, int y)
 	{
 

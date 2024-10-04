@@ -1,5 +1,7 @@
 public class GameState
 {
+    public event Action OnChange;
+
     // Grille du joueur (lettres pour les bateaux, ' ' pour vide)
     public char[][] GridJ1 { get; set; }
 
@@ -36,4 +38,6 @@ public class GameState
             }
         }
     }
+
+    public void NotifyStateChanged() => OnChange?.Invoke();
 }
