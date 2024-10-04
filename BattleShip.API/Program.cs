@@ -271,10 +271,4 @@ public class ShootRequest
     public int J { get; set; } // Joueur qui tir
 }
 
-public class PlaceRequest
-{
-    public int GridSize { get; set; }
-    public string LevelDifficulty { get; set; }
-    public List<Boat>? Boats { get; set; }
 
-}

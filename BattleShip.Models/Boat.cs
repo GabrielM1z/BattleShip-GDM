@@ -5,7 +5,7 @@ public class Boat
     public int Id { get; set;}
     public int Size { get; set;}
     public char Symbol { get; set;}
-    public (int X, int Y)? Coordinates { get; set; } // Propriété pour les coordonnées
+    //public (int X, int Y)? Coordinates { get; set; } // Propriété pour les coordonnées
     public int X { get; set;}
     public int Y { get; set;}
     public Boolean Horizontal { get; set; }
