@@ -147,6 +147,10 @@ div.grids{
     align-items: center;
 }
 
+div.oponent-grid {
+    position: relative;
+}
+
 
 /* Image bato */
 .rotate-90 {
