@@ -56,6 +56,7 @@ app.MapPost("/start", (GridService gridService, [FromBody] PlaceRequest request)
 {
     var gameId = Guid.NewGuid();
     int gridSize = request.GridSize;
+    string level = request.LevelDifficulty;
 
     Fleet boatsJ1 = new Fleet(true);
     if(request.Boats.Count > 0){
@@ -75,7 +76,7 @@ app.MapPost("/start", (GridService gridService, [FromBody] PlaceRequest request)
     game.GridJ2 = gridJ2.GridArray;
     game.MaskedGridJ1 = maskedJ1;
     game.MaskedGridJ2 = maskedJ2;
-    game.GameMode = "IA_2";
+    game.GameMode = level;
 
     game.PrintGame();
 
@@ -272,7 +273,8 @@ public class ShootRequest
 
 public class PlaceRequest
 {
-    public int GridSize { get; set; } // Taille de la grille
-    public List<Boat>? Boats { get; set; }   // Flotte de bateaux
+    public int GridSize { get; set; }
+    public string LevelDifficulty { get; set; }
+    public List<Boat>? Boats { get; set; }
 
 }
