@@ -49,14 +49,12 @@ public class Fleet
                         // Si masked à cet emplacement est faux, le bateau n'est pas encore complètement touché
                         if (masked[i][j] != true)
                         {
-                            Console.WriteLine($"syb={boat.Symbol},i={i},j={j},grid={Grid[i][j]}");
                             isSunk = true;
                             break; // Pas besoin de continuer à vérifier, ce bateau n'est pas coulé
                         }
                     }
                 }
             }
-            Console.WriteLine($"syb={boat.Symbol},R = {isSunk}");
             // Met à jour l'état du bateau (par exemple, définir une propriété `IsSunk`)
             boat.IsAlive = isSunk; // On suppose que `Boat` a une propriété `IsSunk`
         }

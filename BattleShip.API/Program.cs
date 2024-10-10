@@ -99,7 +99,7 @@ app.MapPost("/start", (GridService gridService, [FromBody] PlaceRequest request)
 
 app.MapPost("/tour", (GridService gridService, [FromBody] ShootRequest request) =>
 {
-    Console.WriteLine("Tour du joueur et de l'IA");
+    Console.WriteLine("\n\n\nTour du joueur");
     var gameresult = new GameShootResponse{};
 
     var playerShootResult = shoot(gridService, game, request);
@@ -118,7 +118,7 @@ app.MapPost("/tour", (GridService gridService, [FromBody] ShootRequest request) 
     }
 
     var (xIa, yIa) = manage_call_ia(game.GameMode, game.MaskedGridJ1);    
-
+    Console.WriteLine("Tour de l'IA");
     var aiShootResult = shoot(gridService, game, new ShootRequest { X = xIa, Y = yIa, J = 2 });
     if (aiShootResult is Ok<GameShootResponse> okResultJ)
     {
@@ -141,6 +141,8 @@ app.MapPost("/tour", (GridService gridService, [FromBody] ShootRequest request) 
         return GenerateValidIACoordinates_IA1(grid);
     }else if(ia == "IA_2"){
         return GenerateValidIACoordinates_IA2(grid);
+    }else if(ia == "IA_3"){
+        return GenerateValidIACoordinates_IA3(grid);
     }else {
         return GenerateValidIACoordinates_IA1(grid);
     }
@@ -173,10 +175,61 @@ app.MapPost("/tour", (GridService gridService, [FromBody] ShootRequest request) 
     return (0,0);
 
 }
+(int, int) GenerateValidIACoordinates_IA3(bool?[][] grid){
+    for (int i = 0; i < grid.Length; i++)
+            {
+                for (int j = 0; j < grid[i].Length; j++)
+                {
+                    if (grid[i][j] == true && canShootAround(grid, i, j))
+                    {
+                        if (i > 0 && grid[i - 1][j] == null) // Vérifie la case au-dessus
+                            return (j,i-1);
+                        
+                        if (i < grid.Length - 1 && grid[i + 1][j] == null) // Vérifie la case en-dessous
+                            return (j,i+1);
+
+                        if (j > 0 && grid[i][j - 1] == null) // Vérifie la case à gauche
+                            return (j-1,i);
+
+                        if (j < grid[i].Length - 1 && grid[i][j + 1] == null) // Vérifie la case à droite
+                            return (j+1,i);
+                        //return (j,i);
+                    }
+                }
+            }
+    return GenerateValidIACoordinates_IA1(grid);
+
+}
+
+bool canShootAround(bool?[][] grid, int i, int j)
+{
+    Console.WriteLine($"canshootaround {i}{j}");
+    int nb = 0;
+    // Vérifier les limites pour éviter les accès hors des bords de la grille
+    if (i > 0 && grid[i - 1][j] != null) // Vérifie la case au-dessus
+        nb++;
+    
+    if (i < grid.Length - 1 && grid[i + 1][j] != null) // Vérifie la case en-dessous
+        nb++;
+
+    if (j > 0 && grid[i][j - 1] != null) // Vérifie la case à gauche
+        nb++;
+
+    if (j < grid[i].Length - 1 && grid[i][j + 1] != null) // Vérifie la case à droite
+        nb++;
+
+    // Si toutes les cases adjacentes sont null, retourner true
+    if (nb == 4){
+        return false;
+    }else{
+        return true;
+    }
+}
+
 
 static IResult shoot(GridService gridService, Game game, ShootRequest request)
 {
-    Console.WriteLine("shoot call");
+    //Console.WriteLine("shoot call");
 
     char[][] gridJoueur, gridAdverse;
     bool?[][] gridAdverseMasked;
@@ -204,7 +257,7 @@ static IResult shoot(GridService gridService, Game game, ShootRequest request)
     if (shootResult.CanShoot)
     {
         gameFinished = shootResult.IsHit && gridService.IsGameFinished(gridAdverse,gridAdverseMasked);
-        game.PrintGame();
+        //game.PrintGame();
     }
 
     game.flettJ1.UpdateBoats(game.GridJ1, game.MaskedGridJ1);
