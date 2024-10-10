@@ -203,6 +203,8 @@
 					Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping // Gère les caractères Unicode comme '\u0000'
 				};
 
+				Console.WriteLine("pio");
+
 				// On déserialize dans un objet adapté
 				var gameShootResponse = System.Text.Json.JsonSerializer.Deserialize<GameShootResponse>(json, options);
 
@@ -211,6 +213,7 @@
 					// on recup le GameState et le ShootState
 					var gameReponse = gameShootResponse.game;
 					var shootReponse = gameShootResponse.shootResultJ1;
+
 
 					// Mise à jour du GameState si nécessaire
 					if (shootReponse != null && shootReponse.CanShoot && gameReponse != null)
