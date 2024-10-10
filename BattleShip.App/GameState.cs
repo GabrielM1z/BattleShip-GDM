@@ -1,3 +1,5 @@
+using BattleShip.Models;
+
 public class GameState
 {
     public event Action OnChange;
@@ -14,6 +16,10 @@ public class GameState
     // partie commencé ?
     public bool start = false;
     public bool end = false;
+
+    // Etat des bateaux
+    //public Fleet fleetJ1 {get; set;}
+	//public Fleet fleetJ2 {get; set;}
 
     // Initialisation des grilles
     public GameState(int size)

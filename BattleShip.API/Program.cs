@@ -77,8 +77,8 @@ app.MapPost("/start", (GridService gridService, [FromBody] PlaceRequest request)
     game.MaskedGridJ1 = maskedJ1;
     game.MaskedGridJ2 = maskedJ2;
     game.GameMode = level;
-    game.flettJ1 = boatsJ1;
-    game.flettJ2 = boatsJ2;
+    game.fleetJ1 = boatsJ1;
+    game.fleetJ2 = boatsJ2;
 
     game.PrintGame();
 
@@ -260,8 +260,8 @@ static IResult shoot(GridService gridService, Game game, ShootRequest request)
         //game.PrintGame();
     }
 
-    game.flettJ1.UpdateBoats(game.GridJ1, game.MaskedGridJ1);
-    game.flettJ2.UpdateBoats(game.GridJ2, game.MaskedGridJ2);
+    game.fleetJ1.UpdateBoats(game.GridJ1, game.MaskedGridJ1);
+    game.fleetJ2.UpdateBoats(game.GridJ2, game.MaskedGridJ2);
 
     if (request.J == 1)
     {
@@ -274,8 +274,8 @@ static IResult shoot(GridService gridService, Game game, ShootRequest request)
                 GridJ2 = game.GridJ2,
                 MaskedGridJ1 = game.MaskedGridJ1,
                 MaskedGridJ2 = game.MaskedGridJ2,
-                flettJ1 = game.flettJ1,
-                flettJ2 = game.flettJ2
+                fleetJ1 = game.fleetJ1,
+                fleetJ2 = game.fleetJ2
             },
             shootResultJ1 = new ShootResult
             {
@@ -296,8 +296,8 @@ static IResult shoot(GridService gridService, Game game, ShootRequest request)
                 GridJ2 = game.GridJ2,
                 MaskedGridJ1 = game.MaskedGridJ1,
                 MaskedGridJ2 = game.MaskedGridJ2,
-                flettJ1 = game.flettJ1,
-                flettJ2 = game.flettJ2
+                fleetJ1 = game.fleetJ1,
+                fleetJ2 = game.fleetJ2
             },
             shootResultJ2 = new ShootResult
             {
