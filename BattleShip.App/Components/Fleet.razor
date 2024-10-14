@@ -1,10 +1,27 @@
 @inject GameState GameState  // Injecte le singleton GameState
 
 <div class="fleet">
-    @for (int row = 0; row < GameState.MaskedGridJ2.Length; row++)
+	@if(GameState.fleetJ1 != null)
 	{
-		<p>
-			oui
-		</p>
+		@foreach (var boat in GameState.fleetJ2.Boats)
+		{
+			<p>
+				@boat.Symbol - @boat.Size - @(boat.IsAlive ? "Vivant" : "Coulé")
+			</p>
+		}
 	}
 </div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        // Abonne le composant aux changements du GameState
+        GameState.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        // Désabonne lorsque le composant est détruit pour éviter les fuites de mémoire
+        GameState.OnChange -= StateHasChanged;
+    }
+}y

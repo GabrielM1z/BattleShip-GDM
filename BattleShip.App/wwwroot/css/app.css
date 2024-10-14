@@ -179,9 +179,9 @@ div.oponent-grid {
 
 /* Info 1 */
 div.logs {
-    margin-top: 60px;
-    width: 100px;
-    height: 100px;
+    margin-top: 40px;
+    margin-right: 40px;
+    width: 200px;
     border: #b32121 solid 2px;
     border-radius: 10px;
 }
@@ -189,11 +189,16 @@ div.logs {
 
 /* Info 2 */
 div.fleet {
-    margin-top: 60px;
-    width: 100px;
-    height: 100px;
+    margin-top: 40px;
+    margin-left: 40px;
+    width: 200px;
     border: #c02d76 solid 2px;
     border-radius: 10px;
+    padding: 5px;
+}
+
+div.fleet p{
+    color: #ffffff;
 }
 
 /* Game */

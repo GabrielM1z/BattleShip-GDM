@@ -86,16 +86,6 @@
 
 @code {
 
-	protected override void OnInitialized()
-    {
-        GameState.OnChange += StateHasChanged;
-    }
-
-    public void Dispose()
-    {
-        GameState.OnChange -= StateHasChanged;
-    }
-
 	private MarkupString GetImageForCell(char[][] grid, bool?[][] maskeGrid, int x, int y)
 	{
 
@@ -203,8 +193,6 @@
 					Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping // Gère les caractères Unicode comme '\u0000'
 				};
 
-				Console.WriteLine("pio");
-
 				// On déserialize dans un objet adapté
 				var gameShootResponse = System.Text.Json.JsonSerializer.Deserialize<GameShootResponse>(json, options);
 
@@ -223,9 +211,15 @@
 						GameState.MaskedGridJ2 = gameReponse.MaskedGridJ2;
 						GameState.start = true;
 
-						if(gameReponse.IsGameFinished){
-						GameState.end = true;
+						// fleet maj
+						GameState.fleetJ1 = gameReponse.fleetJ1;
+						GameState.fleetJ2 = gameReponse.fleetJ2;
 
+						// suivi de maj
+						GameState.NotifyStateChanged();
+
+						if(gameReponse.IsGameFinished){
+							GameState.end = true;
 						}
 					}
 					else

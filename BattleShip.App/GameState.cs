@@ -18,8 +18,8 @@ public class GameState
     public bool end = false;
 
     // Etat des bateaux
-    //public Fleet fleetJ1 {get; set;}
-	//public Fleet fleetJ2 {get; set;}
+    public Fleet fleetJ1 {get; set;}
+	public Fleet fleetJ2 {get; set;}
 
     // Initialisation des grilles
     public GameState(int size)
@@ -45,5 +45,8 @@ public class GameState
         }
     }
 
-    public void NotifyStateChanged() => OnChange?.Invoke();
+    public void NotifyStateChanged()
+    {
+        OnChange?.Invoke();
+    }
 }

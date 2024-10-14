@@ -99,9 +99,6 @@ else {
 			}
 		}
 
-		Console.WriteLine(gridSize);
-		Console.WriteLine(lvlDifficulty);
-
 		// Ce qu'on va send
 		var placeRequest = new BattleShip.Models.PlaceRequest
 		{
@@ -116,13 +113,11 @@ else {
 
 		// on envoie
 		var response = await Http.PostAsync("/start", content);
-		Console.WriteLine(response);
 
         if (response.IsSuccessStatusCode)
         {
 		
             var json = await response.Content.ReadAsStringAsync();
-			Console.WriteLine(json);
 			
             if (json != null)
             {
