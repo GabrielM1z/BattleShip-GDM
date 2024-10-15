@@ -362,13 +362,6 @@ static IResult shoot(GridService gridService, Game game, ShootRequest request)
 }
 
 
-app.MapPost("/shoot", (GridService gridService, [FromBody] ShootRequest request) => 
-{
-    return shoot(gridService, game, request);
-})
-.WithOpenApi();
-
-
 
 
 app.Run();
