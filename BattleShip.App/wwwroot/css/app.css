@@ -195,11 +195,17 @@ div.fleet {
     border: #c02d76 solid 2px;
     border-radius: 10px;
     padding: 5px;
+    color: white;
 }
 
-div.fleet p{
-    color: #ffffff;
+.alive {
+    color: green;
 }
+
+.sunk {
+    color: red;
+}
+
 
 /* Game */
 div.game {
