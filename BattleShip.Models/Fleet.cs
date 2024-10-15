@@ -21,15 +21,16 @@ namespace BattleShip.Models
 		// Méthode pour ajouter des bateaux à la flotte
 		public void InitializeBoats()
 		{
-			AddBoat(new Boat(1, 2, 'A')); // Bateau de taille 2
-			AddBoat(new Boat(2, 3, 'B')); // Bateau de taille 3
-			AddBoat(new Boat(3, 3, 'C')); // Bateau de taille 3
-			AddBoat(new Boat(4, 4, 'D')); // Bateau de taille 4
-			AddBoat(new Boat(5, 5, 'E')); // Bateau de taille 5
+			AddBoat(new Boat(1, 2, 'A', "Torpilleur")); // Bateau de taille 2
+			AddBoat(new Boat(2, 3, 'B', "Sous-marin")); // Bateau de taille 3
+			AddBoat(new Boat(3, 3, 'C', "Fregatte")); // Bateau de taille 3
+			AddBoat(new Boat(4, 4, 'D', "Croisseur")); // Bateau de taille 4
+			AddBoat(new Boat(5, 5, 'E', "Porte avion")); // Bateau de taille 5
 		}
 
 		public void AddBoat(Boat boat)
 		{
+			//Console.WriteLine($"\nBoat = {boat.Name}\n");
 			Boats.Add(boat);
 		}
 

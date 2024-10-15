@@ -57,9 +57,14 @@ app.MapGet("/place", () =>
 
 app.MapPost("/start", (GridService gridService, Game game, [FromBody] PlaceRequest request) =>
 {
+    Console.WriteLine("/start call");
     var gameId = Guid.NewGuid();
-    int gridSize = request.GridSize;
-    string level = request.LevelDifficulty;
+    //int gridSize = request.GridSize;
+    //string[] parts = level.Split('_');
+    int gridSize = int.Parse(request.LevelDifficulty.Split('_')[0]);
+    Console.WriteLine($"gridsize = {gridSize}");
+    int level = int.Parse(request.LevelDifficulty.Split('_')[1]);
+    Console.WriteLine($"level = {level}");
 
     Fleet boatsJ1 = new Fleet(true);
     if(request.Boats.Count > 0){
@@ -154,20 +159,19 @@ app.MapGet("/...", () =>
 }).WithOpenApi();
 */
 
-(int, int) manage_call_ia(string ia, bool?[][] grid)
+(int, int) manage_call_ia(int ia, bool?[][] grid)
 {
-    if(ia == "IA_1"){
+    if(ia == 1){
         return GenerateValidIACoordinates_IA1(grid);
-    }else if(ia == "IA_2"){
+    }else if(ia == 2){
         return GenerateValidIACoordinates_IA2(grid);
-    }else if(ia == "IA_3"){
+    }else if(ia == 3){
         return GenerateValidIACoordinates_IA3(grid);
-    }else if(ia == "IA_4"){
+    }else if(ia == 4){
         return GenerateValidIACoordinates_IA4(grid);
     }else{
         return GenerateValidIACoordinates_IA1(grid);
     }
-    
 }
 
 (int, int) GenerateValidIACoordinates_IA1(bool?[][] grid){

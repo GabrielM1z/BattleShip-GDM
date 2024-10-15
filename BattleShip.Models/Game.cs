@@ -9,7 +9,7 @@ namespace BattleShip.Models
 		public bool?[][] MaskedGridJ1 { get; set; }
 		public bool?[][] MaskedGridJ2 { get; set; }
 		public bool IsGameFinished { get; set ;}
-		public string GameMode { get; set;}
+		public int GameMode { get; set;}
 		public Fleet fleetJ1 {get; set;}
 		public Fleet fleetJ2 {get; set;}
 

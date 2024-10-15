@@ -7,15 +7,16 @@ namespace BattleShip.Models
 		public int Id { get; set;}
 		public int Size { get; set;}
 		public char Symbol { get; set;}
-		//public (int X, int Y)? Coordinates { get; set; } // Propriété pour les coordonnées
 		public int X { get; set;}
 		public int Y { get; set;}
+		public string Name {get; set;}
 		public Boolean Horizontal { get; set; }
 		public Boolean IsAlive { get; set; }
 		
-		public Boat(int id, int size, char symbol)
+		public Boat(int id, int size, char symbol, string name)
 		{
 			Id = id;
+			Name = name;
 			Size = size;
 			Symbol = symbol;
 			X = -1;

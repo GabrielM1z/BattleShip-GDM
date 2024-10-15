@@ -8,7 +8,7 @@
         @foreach (var boat in GameState.fleetJ2.Boats)
         {
             <p class="@(boat.IsAlive ? "alive" : "sunk")">
-                @boat.Symbol - @boat.Size - @(boat.IsAlive ? "Vivant" : "Coulé")
+                @boat.Name - @boat.Size - @(boat.IsAlive ? "Vivant" : "Coulé")
             </p>
         }
         <br>
@@ -16,7 +16,7 @@
         @foreach (var boat in GameState.fleetJ1.Boats)
         {
             <p class="@(boat.IsAlive ? "alive" : "sunk")">
-                @boat.Symbol - @boat.Size - @(boat.IsAlive ? "Vivant" : "Coulé")
+                @boat.Name - @boat.Size - @(boat.IsAlive ? "Vivant" : "Coulé")
             </p>
         }
     }
