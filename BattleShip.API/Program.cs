@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Diagnostics;
+using FluentValidation;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +25,8 @@ builder.Services.AddCors(options =>
 
 // Ajoute le service GridService au conteneur DI
 builder.Services.AddSingleton<GridService>();
+builder.Services.AddSingleton<Game>();
+builder.Services.AddScoped<IValidator<ShootRequest>, ShootRequestValidator>();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -31,7 +34,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-var game = new Game{};
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -53,7 +55,7 @@ app.MapGet("/place", () =>
     return Results.Ok(boats);
 }).WithOpenApi();
 
-app.MapPost("/start", (GridService gridService, [FromBody] PlaceRequest request) =>
+app.MapPost("/start", (GridService gridService, Game game, [FromBody] PlaceRequest request) =>
 {
     var gameId = Guid.NewGuid();
     int gridSize = request.GridSize;
@@ -98,12 +100,12 @@ app.MapPost("/start", (GridService gridService, [FromBody] PlaceRequest request)
 
 
 
-app.MapPost("/tour", (GridService gridService, [FromBody] ShootRequest request) =>
+app.MapPost("/tour", (GridService gridService, Game game, [FromBody] ShootRequest request, IValidator<ShootRequest> validator) =>
 {
     Console.WriteLine("\n\n\nTour du joueur");
     var gameresult = new GameShootResponse{};
 
-    var playerShootResult = shoot(gridService, game, request);
+    var playerShootResult = shoot(gridService, game, request, validator);
     if (playerShootResult is not Ok<GameShootResponse> okResult)
     {
         return playerShootResult; // Retourner l'erreur si ce n'est pas un résultat valide
@@ -123,7 +125,7 @@ app.MapPost("/tour", (GridService gridService, [FromBody] ShootRequest request) 
 
     var (xIa, yIa) = manage_call_ia(game.GameMode, game.MaskedGridJ1);    
     Console.WriteLine("Tour de l'IA");
-    var aiShootResult = shoot(gridService, game, new ShootRequest { X = xIa, Y = yIa, J = 2 });
+    var aiShootResult = shoot(gridService, game, new ShootRequest { X = xIa, Y = yIa, J = 2 }, validator);
     if (aiShootResult is not Ok<GameShootResponse> okResultJ)
     {
         return aiShootResult;
@@ -139,9 +141,9 @@ app.MapPost("/tour", (GridService gridService, [FromBody] ShootRequest request) 
 })
 .WithOpenApi();
 
-app.MapPost("/shoot", (GridService gridService, [FromBody] ShootRequest request) => 
+app.MapPost("/shoot", (GridService gridService, Game game, [FromBody] ShootRequest request, IValidator<ShootRequest> validator) => 
 {
-    return shoot(gridService, game, request);
+    return shoot(gridService, game, request, validator);
 })
 .WithOpenApi();
 
@@ -269,12 +271,9 @@ bool canShootAround(bool?[][] grid, int i, int j)
 }
 
 
-static IResult shoot(GridService gridService, Game game, ShootRequest request)
+static IResult shoot(GridService gridService, Game game, ShootRequest request, IValidator<ShootRequest> validator)
 {
-     int gridSize = game.GridJ1.Length; // Ex. la taille de la grille actuelle
-
-    // Instancier le validateur avec la bonne taille de grille
-    var validator = new ShootRequestValidator(gridSize);
+     
     
     // Valider la requête
     var validationResult = validator.Validate(request);
@@ -360,16 +359,6 @@ static IResult shoot(GridService gridService, Game game, ShootRequest request)
     // Retourner le résultat correct selon request.J
     return request.J == 1 ? Results.Ok(shootResultJ1) : Results.Ok(shootResultJ2);   
 }
-
-
-app.MapPost("/shoot", (GridService gridService, [FromBody] ShootRequest request) => 
-{
-    return shoot(gridService, game, request);
-})
-.WithOpenApi();
-
-
-
 
 app.Run();
 

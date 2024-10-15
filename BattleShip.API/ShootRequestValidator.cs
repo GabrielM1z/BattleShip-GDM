@@ -1,9 +1,12 @@
+using BattleShip.Models;
 using FluentValidation;
 
 public class ShootRequestValidator : AbstractValidator<ShootRequest>
 {
-    public ShootRequestValidator(int gridSize)
+    public ShootRequestValidator(Game game)
     {
+        var gridSize = game.GridJ1.Length;
+
         RuleFor(x => x.X)
             .GreaterThanOrEqualTo(0).WithMessage("La coordonnée X doit être positive.")
             .LessThan(gridSize).WithMessage($"La coordonnée X doit être inférieure à {gridSize}.");
