@@ -1,15 +1,25 @@
 @inject GameState GameState  // Injecte le singleton GameState
 
 <div class="fleet">
-	@if(GameState.fleetJ1 != null)
-	{
-		@foreach (var boat in GameState.fleetJ2.Boats)
-		{
-			<p>
-				@boat.Symbol - @boat.Size - @(boat.IsAlive ? "Vivant" : "Coulé")
-			</p>
-		}
-	}
+    
+    @if(GameState.fleetJ1 != null)
+    {
+        <p>Opponent fleet</p>
+        @foreach (var boat in GameState.fleetJ2.Boats)
+        {
+            <p class="@(boat.IsAlive ? "alive" : "sunk")">
+                @boat.Symbol - @boat.Size - @(boat.IsAlive ? "Vivant" : "Coulé")
+            </p>
+        }
+        <br>
+        <p>Our fleet</p>
+        @foreach (var boat in GameState.fleetJ1.Boats)
+        {
+            <p class="@(boat.IsAlive ? "alive" : "sunk")">
+                @boat.Symbol - @boat.Size - @(boat.IsAlive ? "Vivant" : "Coulé")
+            </p>
+        }
+    }
 </div>
 
 @code {
@@ -24,4 +34,4 @@
         // Désabonne lorsque le composant est détruit pour éviter les fuites de mémoire
         GameState.OnChange -= StateHasChanged;
     }
-}y
+}
