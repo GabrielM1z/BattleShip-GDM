@@ -139,7 +139,18 @@ app.MapPost("/tour", (GridService gridService, [FromBody] ShootRequest request) 
 })
 .WithOpenApi();
 
+app.MapPost("/shoot", (GridService gridService, [FromBody] ShootRequest request) => 
+{
+    return shoot(gridService, game, request);
+})
+.WithOpenApi();
 
+/*
+app.MapGet("/...", () =>
+{
+    //histo
+}).WithOpenApi();
+*/
 
 (int, int) manage_call_ia(string ia, bool?[][] grid)
 {
@@ -149,7 +160,9 @@ app.MapPost("/tour", (GridService gridService, [FromBody] ShootRequest request) 
         return GenerateValidIACoordinates_IA2(grid);
     }else if(ia == "IA_3"){
         return GenerateValidIACoordinates_IA3(grid);
-    }else {
+    }else if(ia == "IA_4"){
+        return GenerateValidIACoordinates_IA4(grid);
+    }else{
         return GenerateValidIACoordinates_IA1(grid);
     }
     
@@ -206,6 +219,29 @@ app.MapPost("/tour", (GridService gridService, [FromBody] ShootRequest request) 
     return GenerateValidIACoordinates_IA1(grid);
 
 }
+(int, int) GenerateValidIACoordinates_IA4(bool?[][] grid){
+    for (int i = 0; i < grid.Length; i++)
+            {
+                for (int j = 0; j < grid[i].Length; j++)
+                {
+                    if (grid[i][j] == true && canShootAround(grid, i, j))
+                    {
+                        if (i > 0 && grid[i - 1][j] == null) // Vérifie la case au-dessus
+                            return (j,i-1);
+                        
+                        if (i < grid.Length - 1 && grid[i + 1][j] == null) // Vérifie la case en-dessous
+                            return (j,i+1);
+
+                        if (j > 0 && grid[i][j - 1] == null) // Vérifie la case à gauche
+                            return (j-1,i);
+
+                        if (j < grid[i].Length - 1 && grid[i][j + 1] == null) // Vérifie la case à droite
+                            return (j+1,i);
+                    }
+                }
+            }
+    return GenerateValidIACoordinates_IA1(grid);
+}
 
 bool canShootAround(bool?[][] grid, int i, int j)
 {
@@ -253,19 +289,20 @@ static IResult shoot(GridService gridService, Game game, ShootRequest request)
     char[][] gridJoueur = Array.Empty<char[]>();
     char[][] gridAdverse = Array.Empty<char[]>();
     bool?[][] gridAdverseMasked = Array.Empty<bool?[]>();
+    Fleet fleetAdverse = new Fleet();
     GameShootResponse shootResultJ1 = null, shootResultJ2 = null;
 
     switch (request.J)
     {
         case 1:
-            gridJoueur = game.GridJ1;
             gridAdverse = game.GridJ2;
             gridAdverseMasked = game.MaskedGridJ2;
+            fleetAdverse = game.fleetJ2;
             break;
         case 2:
-            gridJoueur = game.GridJ2; 
             gridAdverse = game.GridJ1;
             gridAdverseMasked = game.MaskedGridJ1;
+            fleetAdverse = game.fleetJ1;
             break;
     }
 
@@ -275,60 +312,53 @@ static IResult shoot(GridService gridService, Game game, ShootRequest request)
     if (shootResult.CanShoot)
     {
         gameFinished = shootResult.IsHit && gridService.IsGameFinished(gridAdverse,gridAdverseMasked);
-        //game.PrintGame();
     }
 
-    game.fleetJ1.UpdateBoats(game.GridJ1, game.MaskedGridJ1);
-    game.fleetJ2.UpdateBoats(game.GridJ2, game.MaskedGridJ2);
+    fleetAdverse.UpdateBoats(gridAdverse,gridAdverseMasked);
+
+    char lettre_shoot = gridAdverse[request.Y][request.X];
+    String mess = fleetAdverse.IsShootSink(lettre_shoot);
+
+    var SendGame = new Game
+    {
+        IsGameFinished = gameFinished,
+        GridJ1 = game.GridJ1,
+        GridJ2 = game.GridJ2,
+        MaskedGridJ1 = game.MaskedGridJ1,
+        MaskedGridJ2 = game.MaskedGridJ2,
+        fleetJ1 = game.fleetJ1,
+        fleetJ2 = game.fleetJ2
+    };
 
     if (request.J == 1)
     {
         shootResultJ1 = new GameShootResponse
         {
-            game = new Game
-            {
-                IsGameFinished = gameFinished,
-                GridJ1 = game.GridJ1,
-                GridJ2 = game.GridJ2,
-                MaskedGridJ1 = game.MaskedGridJ1,
-                MaskedGridJ2 = game.MaskedGridJ2,
-                fleetJ1 = game.fleetJ1,
-                fleetJ2 = game.fleetJ2
-            },
+            game = SendGame,
             shootResultJ1 = new ShootResult
             {
                 CanShoot = shootResult.CanShoot,
-                IsHit = shootResult.IsHit
+                IsHit = shootResult.IsHit,
+                Message = string.IsNullOrEmpty(mess) ? shootResult.Message : mess
             }
         };
     }
-    // Préparer le résultat pour le joueur J2
     else if (request.J == 2)
     {
         shootResultJ2 = new GameShootResponse
         {
-            game = new Game
-            {
-                IsGameFinished = gameFinished,
-                GridJ1 = game.GridJ1,
-                GridJ2 = game.GridJ2,
-                MaskedGridJ1 = game.MaskedGridJ1,
-                MaskedGridJ2 = game.MaskedGridJ2,
-                fleetJ1 = game.fleetJ1,
-                fleetJ2 = game.fleetJ2
-            },
+            game = SendGame,
             shootResultJ2 = new ShootResult
             {
                 CanShoot = shootResult.CanShoot,
-                IsHit = shootResult.IsHit
+                IsHit = shootResult.IsHit,
+                Message = string.IsNullOrEmpty(mess) ? shootResult.Message : mess
             }
         };
     }
 
     // Retourner le résultat correct selon request.J
-    return request.J == 1 ? Results.Ok(shootResultJ1) : Results.Ok(shootResultJ2);
-
-    
+    return request.J == 1 ? Results.Ok(shootResultJ1) : Results.Ok(shootResultJ2);   
 }
 
 
