@@ -4,5 +4,6 @@ namespace BattleShip.Models
     {
         public bool IsHit { get; set; }
         public bool CanShoot { get; set; }
+        public string Message {get; set; }
     }
 }

@@ -168,8 +168,11 @@ namespace BattleShip.API.Service
             // Affichage de l'état du coup
             Console.WriteLine($"Shoot result at ({x}, {y}): {(hit ? "Hit" : "Miss")}");
 
-            // Retourne le résultat du tir
-            return new ShootResult { CanShoot = true, IsHit = hit };
+            int lettre = y + 1;
+            char chiffre = (char)('A' + x);
+
+            // Retourneç le résultat du tir
+            return new ShootResult { CanShoot = true, IsHit = hit, Message = hit ? $"Touché en {lettre}{chiffre}" : $"Raté en {lettre}{chiffre}"};
         }
 
 

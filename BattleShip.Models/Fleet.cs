@@ -36,36 +36,51 @@ namespace BattleShip.Models
 		// Méthode pour obtenir la liste des bateaux
 		public List<Boat> GetBoats()
 		{
-			return Boats; // Retourne la liste des bateaux
+			return Boats;
 		}
 		public void UpdateBoats(char[][] Grid, bool?[][] masked)
 		{
-			if (masked == null) return; // Si la grille masked est null, on ne fait rien
+			if (masked == null) return;
 			
 			foreach (var boat in Boats)
 			{
-				bool isSunk = false; // Supposons que le bateau est touché complètement
+				bool isSunk = false;
 
-				for (int i = 0; i < Grid.Length; i++) // Parcourt les lignes de la grille
+				for (int i = 0; i < Grid.Length; i++)
 				{
-					for (int j = 0; j < Grid[i].Length; j++) // Parcourt les colonnes de la grille
+					for (int j = 0; j < Grid[i].Length; j++)
 					{
-						// Si la case actuelle contient le caractère du bateau
 						if (Grid[i][j] == boat.Symbol)
 						{
-							// Si masked à cet emplacement est faux, le bateau n'est pas encore complètement touché
 							if (masked[i][j] != true)
 							{
 								isSunk = true;
-								break; // Pas besoin de continuer à vérifier, ce bateau n'est pas coulé
+								break;
 							}
 						}
 					}
 				}
-				// Met à jour l'état du bateau (par exemple, définir une propriété `IsSunk`)
-				boat.IsAlive = isSunk; // On suppose que `Boat` a une propriété `IsSunk`
+				boat.IsAlive = isSunk;
 			}
 		}
+
+		public string IsShootSink(char lettre_shoot)
+		{
+			var boat = Boats.FirstOrDefault(b => b.Symbol == lettre_shoot);
+			if (boat != null)
+			{
+				if (!boat.IsAlive)
+				{
+					return $"Coulé! Le navire {boat.Symbol} est hors service.";
+				}
+				else
+				{
+					return "";
+				}
+			}
+			return "";
+		}
+
 
 	}
 }
