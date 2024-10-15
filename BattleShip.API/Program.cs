@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Diagnostics;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -103,29 +104,34 @@ app.MapPost("/tour", (GridService gridService, [FromBody] ShootRequest request) 
     var gameresult = new GameShootResponse{};
 
     var playerShootResult = shoot(gridService, game, request);
-    if (playerShootResult is Ok<GameShootResponse> okResult)
+    if (playerShootResult is not Ok<GameShootResponse> okResult)
     {
-        var result = okResult.Value;
-
-        bool canShoot = result.shootResultJ1.CanShoot;
-        bool isHit = result.shootResultJ1.IsHit;
-        bool isGameFinished = result.game.IsGameFinished;
-
-        if(!canShoot || isGameFinished){
-            return playerShootResult;
-        }
-        gameresult.shootResultJ1 = result.shootResultJ1;
+        return playerShootResult; // Retourner l'erreur si ce n'est pas un résultat valide
     }
+
+    var result = okResult.Value;
+
+    bool canShoot = result.shootResultJ1.CanShoot;
+    bool isHit = result.shootResultJ1.IsHit;
+    bool isGameFinished = result.game.IsGameFinished;
+
+    if(!canShoot || isGameFinished){
+        return playerShootResult;
+    }
+    gameresult.shootResultJ1 = result.shootResultJ1;
+    
 
     var (xIa, yIa) = manage_call_ia(game.GameMode, game.MaskedGridJ1);    
     Console.WriteLine("Tour de l'IA");
     var aiShootResult = shoot(gridService, game, new ShootRequest { X = xIa, Y = yIa, J = 2 });
-    if (aiShootResult is Ok<GameShootResponse> okResultJ)
+    if (aiShootResult is not Ok<GameShootResponse> okResultJ)
     {
-        var result = okResultJ.Value;
-        gameresult.game = result.game;
-        gameresult.shootResultJ2 = result.shootResultJ2;
+        return aiShootResult;
     }
+    
+    result = okResultJ.Value;
+    gameresult.game = result.game;
+    gameresult.shootResultJ2 = result.shootResultJ2;
     game.PrintGame();
 
 
@@ -229,10 +235,24 @@ bool canShootAround(bool?[][] grid, int i, int j)
 
 static IResult shoot(GridService gridService, Game game, ShootRequest request)
 {
-    //Console.WriteLine("shoot call");
+     int gridSize = game.GridJ1.Length; // Ex. la taille de la grille actuelle
 
-    char[][] gridJoueur, gridAdverse;
-    bool?[][] gridAdverseMasked;
+    // Instancier le validateur avec la bonne taille de grille
+    var validator = new ShootRequestValidator(gridSize);
+    
+    // Valider la requête
+    var validationResult = validator.Validate(request);
+
+    // Si la validation échoue, renvoyer une erreur
+    if (!validationResult.IsValid)
+    {
+        return Results.BadRequest(validationResult.Errors);
+    }
+
+    // Si c'est valide, exécuter la logique du tir
+    char[][] gridJoueur = Array.Empty<char[]>();
+    char[][] gridAdverse = Array.Empty<char[]>();
+    bool?[][] gridAdverseMasked = Array.Empty<bool?[]>();
     GameShootResponse shootResultJ1 = null, shootResultJ2 = null;
 
     switch (request.J)
@@ -247,8 +267,6 @@ static IResult shoot(GridService gridService, Game game, ShootRequest request)
             gridAdverse = game.GridJ1;
             gridAdverseMasked = game.MaskedGridJ1;
             break;
-        default:
-            return Results.BadRequest(new { message = "Joueur invalide." });
     }
 
     var shootResult = gridService.PlayerShoot(gridAdverse, gridAdverseMasked, request.X, request.Y);
@@ -314,7 +332,6 @@ static IResult shoot(GridService gridService, Game game, ShootRequest request)
 }
 
 
-// Exemple d'utilisation de la fonction Toto dans une route
 app.MapPost("/shoot", (GridService gridService, [FromBody] ShootRequest request) => 
 {
     return shoot(gridService, game, request);
