@@ -110,7 +110,7 @@ app.MapPost("/setup", (GridService gridService, Game game, [FromBody] LevelReque
     game.MaskedGridJ2 = maskedJ2;
     game.GameMode = aiLevel;
 
-    var boats = fleet.GetBoatsWithoutIsAlive();
+    var boats = fleet;
     return Results.Ok(boats);
 }).WithOpenApi();
 

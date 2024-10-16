@@ -8,10 +8,10 @@
 			<p>PvE</p>
 		</div>
 		<div class="btn-selection">
-			<button class="btn btn-outline-info" @onclick="() => OnButtonClicked( true, 1)">Level 1 (8x8)</button>
-			<button class="btn btn-outline-info" @onclick="() => OnButtonClicked( true, 2)">Level 2 (8x8)</button>
-			<button class="btn btn-outline-info" @onclick="() => OnButtonClicked( true, 3)">Level 3 (10x10)</button>
-			<button class="btn btn-outline-info" @onclick="() => OnButtonClicked( true, 4)">Level 4 (10x10)</button>
+			<button class="btn btn-outline-info" @onclick="() => OnButtonClicked(level1)">Level 1 (8x8)</button>
+			<button class="btn btn-outline-info" @onclick="() => OnButtonClicked(level2)">Level 2 (8x8)</button>
+			<button class="btn btn-outline-info" @onclick="() => OnButtonClicked(level3)">Level 3 (10x10)</button>
+			<button class="btn btn-outline-info" @onclick="() => OnButtonClicked(level4)">Level 4 (10x10)</button>
 		</div>
 	</div>
 
@@ -30,16 +30,20 @@
 
 
 @code {
-    [Parameter]
-    public EventCallback<(bool, int)> OnCallParentMethod { get; set; }
 
-    private async Task OnButtonClicked(bool pve, int level)
+			private string level1 = "11";
+			private string level2 = "12";
+			private string level3 = "13";
+			private string level4 = "14";
+
+    [Parameter]
+    public EventCallback<string> OnCallParentMethod { get; set; }
+
+    private async Task OnButtonClicked(string param)
     {
         if (OnCallParentMethod.HasDelegate)
         {
-			GameState.level = level;
-			GameState.pve = pve;
-            await OnCallParentMethod.InvokeAsync();
+            await OnCallParentMethod.InvokeAsync(param);
         }
     }
 }

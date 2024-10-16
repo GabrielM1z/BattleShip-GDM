@@ -21,11 +21,8 @@ public class GameState
     public Fleet fleetJ1 {get; set;}
 	public Fleet fleetJ2 {get; set;}
 
-    // pve ?
-    public bool pve;
-
-    // lvl IA
-    public int level;
+    // niveau de jeu
+    public string level;
 
     // placement des bateaux
     public bool placeBoat;

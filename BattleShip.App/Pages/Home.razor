@@ -41,18 +41,18 @@
 		<div class="start">
 			<button class="btn btn-primary" @onclick="Menu">Menu</button>
 		</div>
-		
+
 		// placement des bateaux
-		<BattleShip.App.Components.Placement OnCallParentMethod="HandleStartGame"></BattleShip.App.Components.Placement>
+		<BattleShip.App.Components.Placement OnCallStart="HandleStartGame"></BattleShip.App.Components.Placement>
 	}
 	else{
-		<BattleShip.App.Components.Menu OnCallParentMethod="HandlePlaceBoats"></BattleShip.App.Components.Menu>
+		<BattleShip.App.Components.Menu OnCallParentMethod="HandleSetUp"></BattleShip.App.Components.Menu>
 	}
 }
 else 
 {
 	// Menu
-	<BattleShip.App.Components.Menu OnCallParentMethod="HandlePlaceBoats"></BattleShip.App.Components.Menu>
+	<BattleShip.App.Components.Menu OnCallParentMethod="HandleSetUp"></BattleShip.App.Components.Menu>
 }
 
 
@@ -66,17 +66,11 @@ else
 		GameState.placeBoat = false;
 	}
 
-	private async Task HandleStartGame()
-    {
-        await StartGame();
-    }
+	private async Task HandleStartGame(){await StartGame();}
+	private async Task HandleSetUp(string level){await SetUp(level);}
 
-	private async Task HandlePlaceBoats()
-    {
-        await PlaceBoats();
-    }
 
-	private async Task PlaceBoats()
+	private async Task SetUp(string lvl)
 	{
 		Console.WriteLine("placement bato");
 
@@ -84,40 +78,59 @@ else
 		GameState.placeBoat = true;
 		GameState.NotifyStateChanged();
 
-		// TODO appelé le setUp
+		Console.WriteLine(lvl);
+
+		var levelRequest = new BattleShip.Models.LevelRequest
+		{
+			LevelDifficulty = lvl,
+		};
+
+		// on serialize en JSON
+		var jsonSend = System.Text.Json.JsonSerializer.Serialize(levelRequest);
+		var content = new StringContent(jsonSend, Encoding.UTF8, "application/json");
+
+		// on envoie
+		var response = await Http.PostAsync("/setup", content);
+
+
+		if (response.IsSuccessStatusCode)
+		{
+			var json = await response.Content.ReadAsStringAsync();
+
+			if (json != null)
+			{
+				// On set les options de desérialization 
+				var options = new System.Text.Json.JsonSerializerOptions
+				{
+					PropertyNameCaseInsensitive = true, // Assure la correspondance des noms des propriétés sans tenir compte de la casse
+					Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping // Gère les caractères Unicode comme '\u0000'
+				};
+
+				Console.WriteLine(json);
+				// Déserialization du JSON
+                var fleetResponse = System.Text.Json.JsonSerializer.Deserialize<BattleShip.Models.Fleet>(json, options);
+
+				// On met à jour notre singleton
+				if (fleetResponse != null)
+				{
+					GameState.fleetJ1 = fleetResponse;
+				}
+				
+			}
+		}
 	}
+
+
 
     private async Task StartGame()
     {	
-		// on adapte la taille de la grille et la difficulté de l'ia
-		string lvlDifficulty = "";
-		int gridSize = 10;
-		if (GameState.pve){
 
-			switch(GameState.level){
-				case 1:
-					gridSize = 8;
-					break;
-				case 2:
-					gridSize = 8;
-					break;
-				case 3:
-					gridSize = 10;
-					break;
-				case 4:
-					gridSize = 10;
-					break;
-				default:
-					gridSize = 10;
-					break;
-			}
-			lvlDifficulty = gridSize + "_" + GameState.level;
-		}
+		Console.WriteLine("start");
+		
 		// Ce qu'on va send	
-		var placeRequest = new BattleShip.Models.LevelRequest
+		var placeRequest = new BattleShip.Models.PlaceRequest
 		{
-			LevelDifficulty = lvlDifficulty,
-			//Boats = []
+			Boats = []
 		};
 
 		// on serialize en JSON
