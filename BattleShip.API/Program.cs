@@ -48,18 +48,17 @@ app.UseCors("AllowBlazorClient");
 app.MapGet("/", () => "Hello World")
 .WithOpenApi();
 
-app.MapPost("/setup", (GridService gridService, Game game, [FromBody] LevelRequest request) =>
+app.MapPost("/setup", (GridService gridService, Game game, GameSettingsService gameSettingsService, [FromBody] LevelRequest request) =>
 {
     Console.WriteLine("/setup call");
     var gameId = Guid.NewGuid();
 
-    int gridSize = int.Parse(request.LevelDifficulty.Split('_')[0]);
-    int level = int.Parse(request.LevelDifficulty.Split('_')[1]);
+    GameSettings gameSettings = gameSettingsService.ParseGameSettings(request.LevelDifficulty);
 
     Fleet fleet = new Fleet(true);
 
-    Grid gridJ1 = gridService.CreateGrid(gridSize);
-    Grid gridJ2 = gridService.CreateGrid(gridSize);
+    Grid gridJ1 = gridService.CreateGrid(gameSettings.GridSize);
+    Grid gridJ2 = gridService.CreateGrid(gameSettings.GridSize);
 
     var maskedJ1 = gridService.CreateMaskedGrid(gridJ1.GridArray);
     var maskedJ2 = gridService.CreateMaskedGrid(gridJ2.GridArray);
@@ -70,7 +69,7 @@ app.MapPost("/setup", (GridService gridService, Game game, [FromBody] LevelReque
     game.GridJ2 = gridJ2.GridArray;
     game.MaskedGridJ1 = maskedJ1;
     game.MaskedGridJ2 = maskedJ2;
-    game.GameMode = level;
+    game.GameMode = gameSettings.Level;
 
     var boats = fleet.GetBoatsWithoutIsAlive();
     return Results.Ok(boats);

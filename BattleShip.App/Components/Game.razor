@@ -16,10 +16,26 @@
 		<div class="grid-container">
 			@if (GameState.MaskedGridJ2 != null)
 			{
+				<!-- Ajouter des lettres en haut -->
+				<div class="grid-row">
+					<div class="grid-item-header"></div> <!-- Case vide pour l'alignement avec les chiffres -->
+					@for (int col = 0; col < GameState.MaskedGridJ2[0].Length; col++)
+					{
+						<div class="grid-item-header">
+							@((char)('A' + col)) <!-- Lettres de A à J -->
+						</div>
+					}
+				</div>
+
 				@for (int row = 0; row < GameState.MaskedGridJ2.Length; row++)
 				{
 					var currentRow = row;
 					<div class="grid-row pos-{row}">
+						<!-- Ajouter les chiffres à gauche -->
+						<div class="grid-item-header">
+							@(row + 1) <!-- Chiffres de 1 à 10 -->
+						</div>
+
 						@for (int col = 0; col < GameState.MaskedGridJ2[0].Length; col++)
 						{
 							var currentCol = col;
@@ -61,9 +77,24 @@
 		<div class="grid-container">
 			@if (GameState.GridJ1 != null)
 			{
+				<!-- Ajouter des lettres en haut -->
+				<div class="grid-row">
+					<div class="grid-item-header"></div> <!-- Case vide pour l'alignement avec les chiffres -->
+					@for (int col = 0; col < GameState.MaskedGridJ2[0].Length; col++)
+					{
+						<div class="grid-item-header">
+							@((char)('A' + col)) <!-- Lettres de A à J -->
+						</div>
+					}
+				</div>
 				@for (int row = 0; row < GameState.GridJ1.Length; row++)
 				{
+					
 					<div class="grid-row pos-{row}">
+						<!-- Ajouter les chiffres à gauche -->
+						<div class="grid-item-header">
+							@(row + 1) <!-- Chiffres de 1 à 10 -->
+						</div>
 						@for (int col = 0; col < GameState.GridJ1[0].Length; col++)
 						{
 							<div class="grid-item pos-{row}-{col} pos-{col}">
