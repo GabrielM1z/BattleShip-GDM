@@ -33,33 +33,7 @@
 }
 else {
 
-	@* Selection des niveaux *@
-	<div class="selection-level">
-
-		<div class="sub-selection">
-			<div class="title-selection">
-				<p>PvE</p>
-			</div>
-			<div class="btn-selection">
-				<button class="btn btn-outline-info" @onclick="() => StartGame( true, 1)">Level 1 (8x8)</button>
-				<button class="btn btn-outline-info" @onclick="() => StartGame( true, 2)">Level 2 (8x8)</button>
-				<button class="btn btn-outline-info" @onclick="() => StartGame( true, 3)">Level 3 (10x10)</button>
-				<button class="btn btn-outline-info" @onclick="() => StartGame( true, 4)">Level 4 (10x10)</button>
-			</div>
-		</div>
-
-		<div class="sub-selection">
-			<div class="title-selection">
-				<p>PvP</p>
-			</div>
-			<div class="btn-selection">
-				<button class="btn btn-outline-info">Petite Grille (8x8)</button>
-				<button class="btn btn-outline-info">Moyenne Grille (10x10)</button>
-				<button class="btn btn-outline-info">Grosse Grille (12x12)</button>
-			</div>
-		</div>
-		
-	</div>
+	<BattleShip.App.Components.Menu OnCallParentMethod="HandleStartGame"></BattleShip.App.Components.Menu>
 }
 
 
@@ -71,6 +45,12 @@ else {
 		GameState.start = false;
 		GameState.end = false;
 	}
+
+	private async Task HandleStartGame((bool pve, int level) gameParams)
+    {
+        // Appelle la méthode StartGame avec les paramètres envoyés par l'enfant
+        await StartGame(gameParams.pve, gameParams.level);
+    }
 
     private async Task StartGame(bool pve, int level)
     {	
