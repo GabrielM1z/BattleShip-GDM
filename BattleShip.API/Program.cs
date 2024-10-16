@@ -66,32 +66,28 @@ app.MapPost("/setup", (GridService gridService, Game game, [FromBody] LevelReque
     {
         case 0: 
             gridSize = 8; // Grille de taille 8
-            aiLevel = 1; // Niveau IA 1
+            aiLevel = pve ? 1 : 0; // Niveau IA 1
             break;
         case 1:
-            gridSize = 8; // Grille de taille 8
-            aiLevel = 2; // Niveau IA 2
+            gridSize = pve ? 8 : 10; // Grille de taille 8
+            aiLevel = pve ? 2 : 0; // Niveau IA 2
             break;
         case 2:
-            gridSize = 10; // Grille de taille 10
-            aiLevel = 3; // Niveau IA 3
+            gridSize = pve ? 10 : 12; // Grille de taille 10
+            aiLevel = pve ? 3 : 0; // Niveau IA 3
             break;
         case 3:
-            gridSize = 10; // Grille de taille 10
-            aiLevel = 4; // Niveau IA 4
+            gridSize = pve ? 10 : 12; // Grille de taille 10
+            aiLevel = pve ? 4 : 0; // Niveau IA 4
             break;
         case 4:
             gridSize = 12; // Grille de taille 12
-            aiLevel = 4; // Niveau IA 4
+            aiLevel = pve ? 4 : 0; // Niveau IA 4
             break;
         default:
-            throw new ArgumentException("Code de niveau IA non valide.");
+            throw new ArgumentException("Code de niveau non valide.");
     }
     
-
-
-
-
 
 
     Fleet fleet = new Fleet(true);
