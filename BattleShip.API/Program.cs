@@ -56,42 +56,38 @@ app.MapPost("/setup", (GridService gridService, Game game, [FromBody] LevelReque
 
 
     bool pve = request.LevelDifficulty[0] == '1'; // Premier caractère : PVE = true, sinon PVP
-    int aiCode = int.Parse(request.LevelDifficulty[1].ToString()); // Deuxième caractère : niveau IA et taille de la grille
+    int CodeLvl = int.Parse(request.LevelDifficulty[1].ToString()); // Deuxième caractère : niveau IA et taille de la grille
 
     int gridSize = 8; // Valeur par défaut
     int aiLevel = 1; // Valeur par défaut (niveau de l'IA)
 
     // Logique de détermination de la grille et du niveau de l'IA en fonction du code
-    switch (aiCode)
+    switch (CodeLvl)
     {
         case 0: 
             gridSize = 8; // Grille de taille 8
-            aiLevel = 1; // Niveau IA 1
+            aiLevel = pve ? 1 : 0; // Niveau IA 1
             break;
         case 1:
-            gridSize = 8; // Grille de taille 8
-            aiLevel = 2; // Niveau IA 2
+            gridSize = pve ? 8 : 10; // Grille de taille 8
+            aiLevel = pve ? 2 : 0; // Niveau IA 2
             break;
         case 2:
-            gridSize = 10; // Grille de taille 10
-            aiLevel = 3; // Niveau IA 3
+            gridSize = pve ? 10 : 12; // Grille de taille 10
+            aiLevel = pve ? 3 : 0; // Niveau IA 3
             break;
         case 3:
-            gridSize = 10; // Grille de taille 10
-            aiLevel = 4; // Niveau IA 4
+            gridSize = pve ? 10 : 12; // Grille de taille 10
+            aiLevel = pve ? 4 : 0; // Niveau IA 4
             break;
         case 4:
             gridSize = 12; // Grille de taille 12
-            aiLevel = 4; // Niveau IA 4
+            aiLevel = pve ? 4 : 0; // Niveau IA 4
             break;
         default:
-            throw new ArgumentException("Code de niveau IA non valide.");
+            throw new ArgumentException("Code de niveau non valide.");
     }
     
-
-
-
-
 
 
     Fleet fleet = new Fleet(true);
@@ -276,29 +272,41 @@ app.MapGet("/...", () =>
     bool areAllBoatsSunk = true;  //il y a un bateau touché mais non coulé
     areAllBoatsSunk = CheckSinkBoat(grid, fleet);
     Console.WriteLine($"All boats sink {areAllBoatsSunk}");
+    if(!areAllBoatsSunk){
+        for (int i = 0; i < grid.Length; i++){
+            for (int j = 0; j < grid[i].Length; j++){
+                if (grid[i][j] == true && CanShootAround(grid, i, j)){
+                    Console.WriteLine($"--- ICI {areAllBoatsSunk}");
+                    if (i > 0 && grid[i - 1][j] == null) // Vérifie la case au-dessus
+                        return (j,i-1);
+                    
+                    if (i < grid.Length - 1 && grid[i + 1][j] == null) // Vérifie la case en-dessous
+                        return (j,i+1);
 
-    for (int i = 0; i < grid.Length; i++)
-            {
-                for (int j = 0; j < grid[i].Length; j++)
-                {
-                    if (!areAllBoatsSunk && grid[i][j] == true && CanShootAround(grid, i, j))
-                    {
-                        Console.WriteLine($"--- ICI {areAllBoatsSunk}");
-                        if (i > 0 && grid[i - 1][j] == null) // Vérifie la case au-dessus
-                            return (j,i-1);
-                        
-                        if (i < grid.Length - 1 && grid[i + 1][j] == null) // Vérifie la case en-dessous
-                            return (j,i+1);
+                    if (j > 0 && grid[i][j - 1] == null) // Vérifie la case à gauche
+                        return (j-1,i);
 
-                        if (j > 0 && grid[i][j - 1] == null) // Vérifie la case à gauche
-                            return (j-1,i);
-
-                        if (j < grid[i].Length - 1 && grid[i][j + 1] == null) // Vérifie la case à droite
-                            return (j+1,i);
-                    }
+                    if (j < grid[i].Length - 1 && grid[i][j + 1] == null) // Vérifie la case à droite
+                        return (j+1,i);
                 }
             }
-    return GenerateValidIACoordinates_IA1(grid);
+        }
+    }
+
+    int x, y;
+    int attempts = 0;
+    int nb_max_attempts = 15;
+    do {
+        (x, y) = GenerateValidIACoordinates_IA1(grid);
+        Console.WriteLine($"Test aléatoire = ({x},{y})");
+        attempts++;
+    } while (!CanShootAround(grid, x, y) && attempts < nb_max_attempts); // Limite à nb_max_attempts tentatives
+    
+    if (attempts >= nb_max_attempts) {
+        return GenerateValidIACoordinates_IA1(grid);
+    }
+
+    return (x, y);
 }
 
 bool CheckSinkBoat(bool?[][] grid, Fleet fleet)
@@ -308,7 +316,7 @@ bool CheckSinkBoat(bool?[][] grid, Fleet fleet)
         .Sum(boat => boat.Size);        // Additionner la taille des bateaux coulés
 
     int trueCountInGrid = grid.Sum(row => row.Count(cell => cell == true));
-
+    Console.WriteLine($"CanShootAround totalSunkBoatSize={totalSunkBoatSize}, trueCountInGrid={trueCountInGrid}");
     bool areAllBoatsSunk = (totalSunkBoatSize == trueCountInGrid);
     return areAllBoatsSunk;
 }
@@ -316,7 +324,7 @@ bool CheckSinkBoat(bool?[][] grid, Fleet fleet)
 
 bool CanShootAround(bool?[][] grid, int i, int j)
 {
-    Console.WriteLine($"canshootaround {i}{j}");
+    Console.WriteLine($"CanShootAround x={i}, y={j}");
     int nb = 0;
     // Vérifier les limites pour éviter les accès hors des bords de la grille
     if (i > 0 && grid[i - 1][j] != null) // Vérifie la case au-dessus
@@ -342,8 +350,6 @@ bool CanShootAround(bool?[][] grid, int i, int j)
 
 static IResult shoot(GridService gridService, Game game, ShootRequest request, IValidator<ShootRequest> validator)
 {
-     
-    
     // Valider la requête
     var validationResult = validator.Validate(request);
 
