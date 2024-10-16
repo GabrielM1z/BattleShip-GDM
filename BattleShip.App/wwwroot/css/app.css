@@ -213,6 +213,17 @@ div.game {
     flex-direction: row;
     justify-content: center;
 }
+.grid-item-header {
+    text-align: center;
+    font-weight: bold;
+    margin: auto;
+    color: white;
+    height: 20px;
+}
+
+.grid-item-header:first-child {
+    margin-right: auto;
+}
 
 
 /* Selection des niveaux */

@@ -31,6 +31,7 @@ builder.Services.AddScoped<IValidator<PlaceRequest>, PlaceRequestValidator>();
 builder.Services.AddScoped<IValidator<Boat>, BoatValidator>();
 builder.Services.AddScoped<IValidator<ShootRequest>, ShootRequestValidator>();
 
+
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -66,8 +67,45 @@ app.MapPost("/setup", (GridService gridService, Game game, [FromBody] LevelReque
 
     var gameId = Guid.NewGuid();
 
-    int gridSize = int.Parse(request.LevelDifficulty.Split('_')[0]);
-    int level = int.Parse(request.LevelDifficulty.Split('_')[1]);
+
+    bool pve = request.LevelDifficulty[0] == '1'; // Premier caractère : PVE = true, sinon PVP
+    int aiCode = int.Parse(request.LevelDifficulty[1].ToString()); // Deuxième caractère : niveau IA et taille de la grille
+
+    int gridSize = 8; // Valeur par défaut
+    int aiLevel = 1; // Valeur par défaut (niveau de l'IA)
+
+    // Logique de détermination de la grille et du niveau de l'IA en fonction du code
+    switch (aiCode)
+    {
+        case 0: 
+            gridSize = 8; // Grille de taille 8
+            aiLevel = 1; // Niveau IA 1
+            break;
+        case 1:
+            gridSize = 8; // Grille de taille 8
+            aiLevel = 2; // Niveau IA 2
+            break;
+        case 2:
+            gridSize = 10; // Grille de taille 10
+            aiLevel = 3; // Niveau IA 3
+            break;
+        case 3:
+            gridSize = 10; // Grille de taille 10
+            aiLevel = 4; // Niveau IA 4
+            break;
+        case 4:
+            gridSize = 12; // Grille de taille 12
+            aiLevel = 4; // Niveau IA 4
+            break;
+        default:
+            throw new ArgumentException("Code de niveau IA non valide.");
+    }
+    
+
+
+
+
+
 
     Fleet fleet = new Fleet(true);
 
@@ -83,7 +121,7 @@ app.MapPost("/setup", (GridService gridService, Game game, [FromBody] LevelReque
     game.GridJ2 = gridJ2.GridArray;
     game.MaskedGridJ1 = maskedJ1;
     game.MaskedGridJ2 = maskedJ2;
-    game.GameMode = level;
+    game.GameMode = aiLevel;
 
     var boats = fleet.GetBoatsWithoutIsAlive();
     return Results.Ok(boats);
