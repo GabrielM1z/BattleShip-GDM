@@ -51,7 +51,7 @@ app.MapGet("/", () => "Hello World")
 app.MapGet("/place", () =>
 {
     Fleet fleet = new Fleet(true);
-    var boats = fleet.GetBoats();
+    var boats = fleet.GetBoatsWithoutIsAlive();
     return Results.Ok(boats);
 }).WithOpenApi();
 
@@ -59,12 +59,9 @@ app.MapPost("/start", (GridService gridService, Game game, [FromBody] PlaceReque
 {
     Console.WriteLine("/start call");
     var gameId = Guid.NewGuid();
-    //int gridSize = request.GridSize;
-    //string[] parts = level.Split('_');
+
     int gridSize = int.Parse(request.LevelDifficulty.Split('_')[0]);
-    Console.WriteLine($"gridsize = {gridSize}");
     int level = int.Parse(request.LevelDifficulty.Split('_')[1]);
-    Console.WriteLine($"level = {level}");
 
     Fleet boatsJ1 = new Fleet(true);
     if(request.Boats.Count > 0){
@@ -95,7 +92,7 @@ app.MapPost("/start", (GridService gridService, Game game, [FromBody] PlaceReque
         Id = game.Id,
         IsGameFinished = game.IsGameFinished,
         GridJ1 = game.GridJ1,
-        GridJ2 = game.GridJ2,
+        //GridJ2 = game.GridJ2,
         MaskedGridJ1 = maskedJ1,
         MaskedGridJ2 = maskedJ2
     });
@@ -325,8 +322,8 @@ static IResult shoot(GridService gridService, Game game, ShootRequest request, I
     var SendGame = new Game
     {
         IsGameFinished = gameFinished,
-        GridJ1 = game.GridJ1,
-        GridJ2 = game.GridJ2,
+        //GridJ1 = game.GridJ1,
+        //GridJ2 = game.GridJ2,
         MaskedGridJ1 = game.MaskedGridJ1,
         MaskedGridJ2 = game.MaskedGridJ2,
         fleetJ1 = game.fleetJ1,
@@ -335,6 +332,7 @@ static IResult shoot(GridService gridService, Game game, ShootRequest request, I
 
     if (request.J == 1)
     {
+        SendGame.GridJ1 = game.GridJ1;
         shootResultJ1 = new GameShootResponse
         {
             game = SendGame,
@@ -348,6 +346,7 @@ static IResult shoot(GridService gridService, Game game, ShootRequest request, I
     }
     else if (request.J == 2)
     {
+        SendGame.GridJ1 = game.GridJ1;
         shootResultJ2 = new GameShootResponse
         {
             game = SendGame,
