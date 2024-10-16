@@ -28,6 +28,7 @@ builder.Services.AddSingleton<GridService>();
 builder.Services.AddSingleton<Game>();
 builder.Services.AddScoped<IValidator<ShootRequest>, ShootRequestValidator>();
 
+
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -48,17 +49,55 @@ app.UseCors("AllowBlazorClient");
 app.MapGet("/", () => "Hello World")
 .WithOpenApi();
 
-app.MapPost("/setup", (GridService gridService, Game game, GameSettingsService gameSettingsService, [FromBody] LevelRequest request) =>
+app.MapPost("/setup", (GridService gridService, Game game, [FromBody] LevelRequest request) =>
 {
     Console.WriteLine("/setup call");
     var gameId = Guid.NewGuid();
 
-    GameSettings gameSettings = gameSettingsService.ParseGameSettings(request.LevelDifficulty);
+
+    bool pve = request.LevelDifficulty[0] == '1'; // Premier caractère : PVE = true, sinon PVP
+    int aiCode = int.Parse(request.LevelDifficulty[1].ToString()); // Deuxième caractère : niveau IA et taille de la grille
+
+    int gridSize = 8; // Valeur par défaut
+    int aiLevel = 1; // Valeur par défaut (niveau de l'IA)
+
+    // Logique de détermination de la grille et du niveau de l'IA en fonction du code
+    switch (aiCode)
+    {
+        case 0: 
+            gridSize = 8; // Grille de taille 8
+            aiLevel = 1; // Niveau IA 1
+            break;
+        case 1:
+            gridSize = 8; // Grille de taille 8
+            aiLevel = 2; // Niveau IA 2
+            break;
+        case 2:
+            gridSize = 10; // Grille de taille 10
+            aiLevel = 3; // Niveau IA 3
+            break;
+        case 3:
+            gridSize = 10; // Grille de taille 10
+            aiLevel = 4; // Niveau IA 4
+            break;
+        case 4:
+            gridSize = 12; // Grille de taille 12
+            aiLevel = 4; // Niveau IA 4
+            break;
+        default:
+            throw new ArgumentException("Code de niveau IA non valide.");
+    }
+    
+
+
+
+
+
 
     Fleet fleet = new Fleet(true);
 
-    Grid gridJ1 = gridService.CreateGrid(gameSettings.GridSize);
-    Grid gridJ2 = gridService.CreateGrid(gameSettings.GridSize);
+    Grid gridJ1 = gridService.CreateGrid(gridSize);
+    Grid gridJ2 = gridService.CreateGrid(gridSize);
 
     var maskedJ1 = gridService.CreateMaskedGrid(gridJ1.GridArray);
     var maskedJ2 = gridService.CreateMaskedGrid(gridJ2.GridArray);
@@ -69,21 +108,22 @@ app.MapPost("/setup", (GridService gridService, Game game, GameSettingsService g
     game.GridJ2 = gridJ2.GridArray;
     game.MaskedGridJ1 = maskedJ1;
     game.MaskedGridJ2 = maskedJ2;
-    game.GameMode = gameSettings.Level;
+    game.GameMode = aiLevel;
 
     var boats = fleet.GetBoatsWithoutIsAlive();
     return Results.Ok(boats);
 }).WithOpenApi();
 
-app.MapPost("/start", (GridService gridService, Game game, [FromBody] PlaceRequest request) =>
+
+app.MapPost("/start", (GridService gridService, Game game, [FromBody] PlaceRequest requeste) =>
 {
     Console.WriteLine("/start call");
 
     
 
     Fleet boatsJ1 = new Fleet(true);
-    if(request.Boats.Count > 0){
-        boatsJ1.Boats = request.Boats;
+    if(requeste.Boats.Count > 0){
+        boatsJ1.Boats = requeste.Boats;
     }
     Fleet boatsJ2 = new Fleet(true);
 
