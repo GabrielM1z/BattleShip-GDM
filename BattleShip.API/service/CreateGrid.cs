@@ -6,11 +6,11 @@ namespace BattleShip.API.Service
     {
         private Random _random = new Random(); // Pour la génération aléatoire
         
-        public Grid CreateGrid(int GridSize, List<Boat> boats)
+        public Grid CreateGrid(int GridSize)
         {
             var grid = new Grid(GridSize); // Crée une grille de 10x10
             InitializeGrid(grid);
-            PlaceBoat(grid, boats);
+            //PlaceBoat(grid, boats);
             return grid;
         }
 
@@ -26,7 +26,7 @@ namespace BattleShip.API.Service
         }
 
 
-        public void PlaceBoat(Grid grid, List<Boat> boats)
+        public void PlaceBoat(char[][] grid, List<Boat> boats)
         {
             foreach (var boat in boats)
             {
@@ -43,9 +43,9 @@ namespace BattleShip.API.Service
                         for (int i = 0; i < boat.Size; i++)
                         {
                             if (boat.Horizontal)
-                                grid.GridArray[row][col + i] = boat.Symbol; // Placer horizontalement
+                                grid[row][col + i] = boat.Symbol; // Placer horizontalement
                             else
-                                grid.GridArray[row + i][col] = boat.Symbol; // Placer verticalement
+                                grid[row + i][col] = boat.Symbol; // Placer verticalement
                         }
                         placed = true;
                     }
@@ -61,8 +61,8 @@ namespace BattleShip.API.Service
                     while (!placed)
                     {
                         bool horizontal = _random.Next(2) == 0; // Choisir aléatoirement horizontal ou vertical
-                        int row = _random.Next(grid.Size);
-                        int col = _random.Next(grid.Size);
+                        int row = _random.Next(grid.Length);
+                        int col = _random.Next(grid[0].Length);
                         boat.Y = row;
                         boat.X = col;
                         if (CanPlaceBoat(grid, boat, row, col, horizontal))
@@ -70,9 +70,9 @@ namespace BattleShip.API.Service
                             for (int i = 0; i < boat.Size; i++)
                             {
                                 if (horizontal)
-                                    grid.GridArray[row][col + i] = boat.Symbol; // Placer horizontalement
+                                    grid[row][col + i] = boat.Symbol; // Placer horizontalement
                                 else
-                                    grid.GridArray[row + i][col] = boat.Symbol; // Placer verticalement
+                                    grid[row + i][col] = boat.Symbol; // Placer verticalement
                             }
                             placed = true;
                         }
@@ -87,24 +87,24 @@ namespace BattleShip.API.Service
 
 
         // Méthode pour vérifier si le bateau peut être placé
-        private bool CanPlaceBoat(Grid grid, Boat boat, int row, int col, bool horizontal)
+        private bool CanPlaceBoat(char[][] grid, Boat boat, int row, int col, bool horizontal)
         {
             if (horizontal)
             {
-                if (col + boat.Size > grid.Size) return false;
+                if (col + boat.Size > grid.Length) return false;
 
                 for (int i = 0; i < boat.Size; i++)
                 {
-                    if (grid.GridArray[row][col + i] != '\0') return false; // Vérifie s'il y a un bateau déjà placé
+                    if (grid[row][col + i] != '\0') return false; // Vérifie s'il y a un bateau déjà placé
                 }
             }
             else
             {
-                if (row + boat.Size > grid.Size) return false;
+                if (row + boat.Size > grid[0].Length) return false;
 
                 for (int i = 0; i < boat.Size; i++)
                 {
-                    if (grid.GridArray[row + i][col] != '\0') return false; // Vérifie s'il y a un bateau déjà placé
+                    if (grid[row + i][col] != '\0') return false; // Vérifie s'il y a un bateau déjà placé
                 }
             }
 
