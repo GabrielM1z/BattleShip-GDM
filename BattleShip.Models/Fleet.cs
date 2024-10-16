@@ -39,6 +39,22 @@ namespace BattleShip.Models
 		{
 			return Boats;
 		}
+		
+		// Méthode pour obtenir la liste des bateaux sans IsAlive (/place)
+		public List<object> GetBoatsWithoutIsAlive()
+		{
+			return Boats.Select(boat => new
+			{
+				boat.Id,
+				boat.Name,
+				boat.Size,
+				boat.Symbol,
+				boat.X,
+				boat.Y,
+				boat.Horizontal
+			}).ToList<object>();
+		}
+
 		public void UpdateBoats(char[][] Grid, bool?[][] masked)
 		{
 			if (masked == null) return;

@@ -48,32 +48,18 @@ app.UseCors("AllowBlazorClient");
 app.MapGet("/", () => "Hello World")
 .WithOpenApi();
 
-app.MapGet("/place", () =>
+app.MapPost("/setup", (GridService gridService, Game game, [FromBody] LevelRequest request) =>
 {
-    Fleet fleet = new Fleet(true);
-    var boats = fleet.GetBoats();
-    return Results.Ok(boats);
-}).WithOpenApi();
-
-app.MapPost("/start", (GridService gridService, Game game, [FromBody] PlaceRequest request) =>
-{
-    Console.WriteLine("/start call");
+    Console.WriteLine("/setup call");
     var gameId = Guid.NewGuid();
-    //int gridSize = request.GridSize;
-    //string[] parts = level.Split('_');
+
     int gridSize = int.Parse(request.LevelDifficulty.Split('_')[0]);
-    Console.WriteLine($"gridsize = {gridSize}");
     int level = int.Parse(request.LevelDifficulty.Split('_')[1]);
-    Console.WriteLine($"level = {level}");
 
-    Fleet boatsJ1 = new Fleet(true);
-    if(request.Boats.Count > 0){
-        boatsJ1.Boats = request.Boats;
-    }
-    Fleet boatsJ2 = new Fleet(true);
+    Fleet fleet = new Fleet(true);
 
-    Grid gridJ1 = gridService.CreateGrid(gridSize, boatsJ1.GetBoats());
-    Grid gridJ2 = gridService.CreateGrid(gridSize, boatsJ2.GetBoats());
+    Grid gridJ1 = gridService.CreateGrid(gridSize);
+    Grid gridJ2 = gridService.CreateGrid(gridSize);
 
     var maskedJ1 = gridService.CreateMaskedGrid(gridJ1.GridArray);
     var maskedJ2 = gridService.CreateMaskedGrid(gridJ2.GridArray);
@@ -85,6 +71,28 @@ app.MapPost("/start", (GridService gridService, Game game, [FromBody] PlaceReque
     game.MaskedGridJ1 = maskedJ1;
     game.MaskedGridJ2 = maskedJ2;
     game.GameMode = level;
+
+    var boats = fleet.GetBoatsWithoutIsAlive();
+    return Results.Ok(boats);
+}).WithOpenApi();
+
+app.MapPost("/start", (GridService gridService, Game game, [FromBody] PlaceRequest request) =>
+{
+    Console.WriteLine("/start call");
+
+    
+
+    Fleet boatsJ1 = new Fleet(true);
+    if(request.Boats.Count > 0){
+        boatsJ1.Boats = request.Boats;
+    }
+    Fleet boatsJ2 = new Fleet(true);
+
+    gridService.PlaceBoat(game.GridJ1, boatsJ1.GetBoats());
+    gridService.PlaceBoat(game.GridJ2, boatsJ2.GetBoats());
+
+
+    
     game.fleetJ1 = boatsJ1;
     game.fleetJ2 = boatsJ2;
 
@@ -95,9 +103,9 @@ app.MapPost("/start", (GridService gridService, Game game, [FromBody] PlaceReque
         Id = game.Id,
         IsGameFinished = game.IsGameFinished,
         GridJ1 = game.GridJ1,
-        GridJ2 = game.GridJ2,
-        MaskedGridJ1 = maskedJ1,
-        MaskedGridJ2 = maskedJ2
+        //GridJ2 = game.GridJ2,
+        MaskedGridJ1 = game.MaskedGridJ1,
+        MaskedGridJ2 = game.MaskedGridJ2
     });
 })
 .WithOpenApi();
@@ -128,8 +136,8 @@ app.MapPost("/tour", (GridService gridService, Game game, [FromBody] ShootReques
     gameresult.shootResultJ1 = result.shootResultJ1;
     
 
-    var (xIa, yIa) = manage_call_ia(game.GameMode, game.MaskedGridJ1);    
-    Console.WriteLine("Tour de l'IA");
+    var (xIa, yIa) = manage_call_ia(game.GameMode, game.MaskedGridJ1, game.fleetJ1);    
+    Console.WriteLine($"Tour de l'IA:{game.GameMode}");
     var aiShootResult = shoot(gridService, game, new ShootRequest { X = xIa, Y = yIa, J = 2 }, validator);
     if (aiShootResult is not Ok<GameShootResponse> okResultJ)
     {
@@ -159,7 +167,7 @@ app.MapGet("/...", () =>
 }).WithOpenApi();
 */
 
-(int, int) manage_call_ia(int ia, bool?[][] grid)
+(int, int) manage_call_ia(int ia, bool?[][] grid, Fleet fleet)
 {
     if(ia == 1){
         return GenerateValidIACoordinates_IA1(grid);
@@ -168,7 +176,7 @@ app.MapGet("/...", () =>
     }else if(ia == 3){
         return GenerateValidIACoordinates_IA3(grid);
     }else if(ia == 4){
-        return GenerateValidIACoordinates_IA4(grid);
+        return GenerateValidIACoordinates_IA4(grid, fleet);
     }else{
         return GenerateValidIACoordinates_IA1(grid);
     }
@@ -205,7 +213,7 @@ app.MapGet("/...", () =>
             {
                 for (int j = 0; j < grid[i].Length; j++)
                 {
-                    if (grid[i][j] == true && canShootAround(grid, i, j))
+                    if (grid[i][j] == true && CanShootAround(grid, i, j))
                     {
                         if (i > 0 && grid[i - 1][j] == null) // Vérifie la case au-dessus
                             return (j,i-1);
@@ -225,13 +233,18 @@ app.MapGet("/...", () =>
     return GenerateValidIACoordinates_IA1(grid);
 
 }
-(int, int) GenerateValidIACoordinates_IA4(bool?[][] grid){
+(int, int) GenerateValidIACoordinates_IA4(bool?[][] grid, Fleet fleet){
+    bool areAllBoatsSunk = true;  //il y a un bateau touché mais non coulé
+    areAllBoatsSunk = CheckSinkBoat(grid, fleet);
+    Console.WriteLine($"All boats sink {areAllBoatsSunk}");
+
     for (int i = 0; i < grid.Length; i++)
             {
                 for (int j = 0; j < grid[i].Length; j++)
                 {
-                    if (grid[i][j] == true && canShootAround(grid, i, j))
+                    if (!areAllBoatsSunk && grid[i][j] == true && CanShootAround(grid, i, j))
                     {
+                        Console.WriteLine($"--- ICI {areAllBoatsSunk}");
                         if (i > 0 && grid[i - 1][j] == null) // Vérifie la case au-dessus
                             return (j,i-1);
                         
@@ -249,7 +262,20 @@ app.MapGet("/...", () =>
     return GenerateValidIACoordinates_IA1(grid);
 }
 
-bool canShootAround(bool?[][] grid, int i, int j)
+bool CheckSinkBoat(bool?[][] grid, Fleet fleet)
+{
+    int totalSunkBoatSize = fleet.Boats
+        .Where(boat => !boat.IsAlive)   // Filtrer les bateaux coulés
+        .Sum(boat => boat.Size);        // Additionner la taille des bateaux coulés
+
+    int trueCountInGrid = grid.Sum(row => row.Count(cell => cell == true));
+
+    bool areAllBoatsSunk = (totalSunkBoatSize == trueCountInGrid);
+    return areAllBoatsSunk;
+}
+
+
+bool CanShootAround(bool?[][] grid, int i, int j)
 {
     Console.WriteLine($"canshootaround {i}{j}");
     int nb = 0;
@@ -325,8 +351,8 @@ static IResult shoot(GridService gridService, Game game, ShootRequest request, I
     var SendGame = new Game
     {
         IsGameFinished = gameFinished,
-        GridJ1 = game.GridJ1,
-        GridJ2 = game.GridJ2,
+        //GridJ1 = game.GridJ1,
+        //GridJ2 = game.GridJ2,
         MaskedGridJ1 = game.MaskedGridJ1,
         MaskedGridJ2 = game.MaskedGridJ2,
         fleetJ1 = game.fleetJ1,
@@ -335,6 +361,7 @@ static IResult shoot(GridService gridService, Game game, ShootRequest request, I
 
     if (request.J == 1)
     {
+        SendGame.GridJ1 = game.GridJ1;
         shootResultJ1 = new GameShootResponse
         {
             game = SendGame,
@@ -348,6 +375,7 @@ static IResult shoot(GridService gridService, Game game, ShootRequest request, I
     }
     else if (request.J == 2)
     {
+        SendGame.GridJ1 = game.GridJ1;
         shootResultJ2 = new GameShootResponse
         {
             game = SendGame,
