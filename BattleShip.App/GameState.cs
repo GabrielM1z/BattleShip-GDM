@@ -21,6 +21,15 @@ public class GameState
     public Fleet fleetJ1 {get; set;}
 	public Fleet fleetJ2 {get; set;}
 
+    // pve ?
+    public bool pve;
+
+    // lvl IA
+    public int level;
+
+    // placement des bateaux
+    public bool placeBoat;
+
     // Initialisation des grilles
     public GameState(int size)
     {

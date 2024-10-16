@@ -6,13 +6,13 @@
         <h3>Placement</h3>
     </div>
     <div class="grid-container">
-        @if (GridSize != 0)
+        @if (1 != 0)
         {
-            @for (int row = 0; row < GridSize; row++)
+            @for (int row = 0; row < 10; row++)
             {
                 var currentRow = row;
                 <div class="grid-row pos-{row}">
-                    @for (int col = 0; col < GridSize; col++)
+                    @for (int col = 0; col < 10; col++)
                     {
                         var currentCol = col;
                         <div class="grid-item pos-{row}-{col} pos-{col}">
@@ -29,7 +29,14 @@
 
 
 @code {
-
     [Parameter]
-    public int GridSize { get; set; }
+    public EventCallback<(bool, int)> OnCallParentMethod { get; set; }
+
+    private async Task OnButtonClicked(bool pve, int level)
+    {
+        if (OnCallParentMethod.HasDelegate)
+        {
+            await OnCallParentMethod.InvokeAsync();
+        }
+    }
 }

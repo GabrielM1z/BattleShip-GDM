@@ -19,21 +19,40 @@
 
 
 
-@if(GameState != null && GameState.start == true)
+@if(GameState != null)
 {
-	<div class="start">
-		<button class="btn btn-primary" @onclick="Menu">Menu</button>
-	</div>
+	@if(GameState.start == true)
+	{
+		// btn pour retour Menu
+		<div class="start">
+			<button class="btn btn-primary" @onclick="Menu">Menu</button>
+		</div>
 
-    <div class="game">
-		<BattleShip.App.Components.Fleet></BattleShip.App.Components.Fleet>
-        <BattleShip.App.Components.Game></BattleShip.App.Components.Game>
-		<BattleShip.App.Components.Logs></BattleShip.App.Components.Logs>
-    </div>
+		// Jeu
+		<div class="game">
+			<BattleShip.App.Components.Fleet></BattleShip.App.Components.Fleet>
+			<BattleShip.App.Components.Game></BattleShip.App.Components.Game>
+			<BattleShip.App.Components.Logs></BattleShip.App.Components.Logs>
+		</div>
+	}
+	else if(GameState.placeBoat == true)
+	{
+		// btn pour retour Menu
+		<div class="start">
+			<button class="btn btn-primary" @onclick="Menu">Menu</button>
+		</div>
+		
+		// placement des bateaux
+		<BattleShip.App.Components.Placement OnCallParentMethod="HandleStartGame"></BattleShip.App.Components.Placement>
+	}
+	else{
+		<BattleShip.App.Components.Menu OnCallParentMethod="HandlePlaceBoats"></BattleShip.App.Components.Menu>
+	}
 }
-else {
-
-	<BattleShip.App.Components.Menu OnCallParentMethod="HandleStartGame"></BattleShip.App.Components.Menu>
+else 
+{
+	// Menu
+	<BattleShip.App.Components.Menu OnCallParentMethod="HandlePlaceBoats"></BattleShip.App.Components.Menu>
 }
 
 
@@ -44,22 +63,38 @@ else {
     {
 		GameState.start = false;
 		GameState.end = false;
+		GameState.placeBoat = false;
 	}
 
-	private async Task HandleStartGame((bool pve, int level) gameParams)
+	private async Task HandleStartGame()
     {
-        // Appelle la méthode StartGame avec les paramètres envoyés par l'enfant
-        await StartGame(gameParams.pve, gameParams.level);
+        await StartGame();
     }
 
-    private async Task StartGame(bool pve, int level)
+	private async Task HandlePlaceBoats()
+    {
+        await PlaceBoats();
+    }
+
+	private async Task PlaceBoats()
+	{
+		Console.WriteLine("placement bato");
+
+		// TODO mettre en mode placeBoat
+		GameState.placeBoat = true;
+		GameState.NotifyStateChanged();
+
+		// TODO appelé le setUp
+	}
+
+    private async Task StartGame()
     {	
 		// on adapte la taille de la grille et la difficulté de l'ia
 		string lvlDifficulty = "";
 		int gridSize = 10;
-		if (pve){
+		if (GameState.pve){
 
-			switch(level){
+			switch(GameState.level){
 				case 1:
 					gridSize = 8;
 					break;
@@ -76,7 +111,7 @@ else {
 					gridSize = 10;
 					break;
 			}
-			lvlDifficulty = gridSize + "_" + level;
+			lvlDifficulty = gridSize + "_" + GameState.level;
 		}
 		// Ce qu'on va send	
 		var placeRequest = new BattleShip.Models.PlaceRequest

@@ -1,3 +1,5 @@
+@inject GameState GameState
+
 @* Selection des niveaux *@
 <div class="selection-level">
 
@@ -35,7 +37,9 @@
     {
         if (OnCallParentMethod.HasDelegate)
         {
-            await OnCallParentMethod.InvokeAsync((pve, level)); // Envoie un tuple avec deux arguments
+			GameState.level = level;
+			GameState.pve = pve;
+            await OnCallParentMethod.InvokeAsync();
         }
     }
 }
