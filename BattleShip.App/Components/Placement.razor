@@ -70,7 +70,7 @@
 
 
 <div>
-	<button class="btn btn-primary" @onclick="() => OnButtonClicked()">
+	<button class="btn btn-primary" @onclick="() => OnButtonClicked(GameState.fleetJ1)">
 		Start
 	</button>
 </div>
@@ -83,9 +83,9 @@
 	private bool placementHorizontal;
 
 	[Parameter]
-	public EventCallback OnCallStart { get; set; }
+	public EventCallback<Models.Fleet> OnCallStart { get; set; }
 
-	private async Task OnButtonClicked()
+	private async Task OnButtonClicked(Models.Fleet placedBoat)
 	{
 		if (OnCallStart.HasDelegate)
 		{

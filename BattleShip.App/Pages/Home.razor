@@ -66,7 +66,7 @@ else
 		GameState.placeBoat = false;
 	}
 
-	private async Task HandleStartGame(){await StartGame();}
+	private async Task HandleStartGame(Fleet fleetPlaced){await StartGame(fleetPlaced);}
 	private async Task HandleSetUp(string level){await SetUp(level);}
 
 
