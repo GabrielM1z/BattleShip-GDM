@@ -131,6 +131,19 @@ namespace BattleShip.Models
 			}
 		}
 
-
+		public void SetGame(GameStateHisto game)
+		{
+			Id = game.Id;
+			GridJ1 = game.GridJ1;
+			GridJ2 = game.GridJ2;
+			MaskedGridJ1 = game.MaskedGridJ1;
+			MaskedGridJ2 = game.MaskedGridJ2;
+			IsGameFinished = game.IsGameFinished;
+			GameMode = game.GameMode;
+			IaLvl = game.IaLvl;
+			PVE = game.PVE;
+			fleetJ1 = game.FleetJ1;
+			fleetJ2 = game.FleetJ2;
+		}
 	}
 }
