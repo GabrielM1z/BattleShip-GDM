@@ -143,12 +143,12 @@
 				}
 				// sinon si lettre a gauche => last
 				else if (y > 0 && grid[x][y-1] == letter){
-					imageUrl = "img/front_boat";
+					imageUrl = "img/back_boat";
 					rotationClass = "rotate-90";
 				}
 				// sinon si lettre a droite => first
 				else if (y < numberOfColumns-1 && grid[x][y+1] == letter){
-					imageUrl = "img/back_boat";
+					imageUrl = "img/front_boat";
 					rotationClass = "rotate-90";
 				}
 				// si lettre en haut et en bas => midle
@@ -252,7 +252,8 @@
 						if(gameReponse.IsGameFinished){
 							GameState.end = true;
 						}
-					}
+						StateHasChanged();
+					}	
 					else
 					{
 						Console.WriteLine("shoot incorrect");
@@ -281,4 +282,15 @@
         public int y { get; set; }
 		public int j { get; set; }
     }
+
+    protected override void OnInitialized()
+    {
+        GameState.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        GameState.OnChange -= StateHasChanged;
+    }
+
 }

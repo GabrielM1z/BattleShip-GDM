@@ -66,7 +66,7 @@ else
 		GameState.placeBoat = false;
 	}
 
-	private async Task HandleStartGame(){await StartGame();}
+	private async Task HandleStartGame(Fleet fleetPlaced){await StartGame(fleetPlaced);}
 	private async Task HandleSetUp(string level){await SetUp(level);}
 
 
@@ -108,29 +108,36 @@ else
 
 				Console.WriteLine(json);
 				// Déserialization du JSON
-                var fleetResponse = System.Text.Json.JsonSerializer.Deserialize<BattleShip.Models.Fleet>(json, options);
+                var gameResponse = System.Text.Json.JsonSerializer.Deserialize<BattleShip.Models.Game>(json, options);
 
 				// On met à jour notre singleton
-				if (fleetResponse != null)
+				if (gameResponse != null)
 				{
-					GameState.fleetJ1 = fleetResponse;
+					GameState.fleetJ1 = gameResponse.fleetJ1;
+					GameState.GridJ1 = gameResponse.GridJ1;
+					Console.WriteLine(gameResponse.GridJ1);
 				}
-				
 			}
 		}
 	}
 
 
 
-    private async Task StartGame()
+    private async Task StartGame(Fleet fleetPlaced)
     {	
-
 		Console.WriteLine("start");
+		Console.WriteLine(fleetPlaced);
+
+		List<Boat> boats = [];
+		if(fleetPlaced != null)
+		{
+			boats = fleetPlaced.Boats;
+		}
 		
 		// Ce qu'on va send	
 		var placeRequest = new BattleShip.Models.PlaceRequest
 		{
-			Boats = []
+			Boats = boats
 		};
 
 		// on serialize en JSON

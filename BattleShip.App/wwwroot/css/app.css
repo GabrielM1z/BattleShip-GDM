@@ -154,7 +154,7 @@ div.oponent-grid {
 
 /* Image bato */
 .rotate-90 {
-    transform: rotate(90deg);
+    transform: rotate(-90deg);
 }
 
 
@@ -280,7 +280,6 @@ div.sub-selection>div.btn-selection>button {
 
 
 /* placement */
-
 div.container-placement{
     display: flex;
     flex-direction: row;
@@ -290,5 +289,4 @@ div.container-placement{
 div.list-boat {
     border-radius: 10px;
     border: #00305e solid 1px;
-    width: 50px;
 }

@@ -14,12 +14,15 @@
 					@boat.Name - @boat.Size
 				</p>
 
-				@if(!clic & !IsPlaced(boat.Symbol))
+				@if(!clic)
 				{
 					@if(!IsPlaced(boat.Symbol))
 					{
-						<button class="btn btn-primary" @onclick="() => SelectBoat(boat)" >
-							Add
+						<button class="btn btn-primary" @onclick="() => SelectBoat(boat, false)" >
+							Add Vertical
+						</button>
+						<button class="btn btn-primary" @onclick="() => SelectBoat(boat, true)" >
+							Add Horizontal
 						</button>
 					}
 					else {
@@ -42,7 +45,7 @@
 			<h3>Placement</h3>
 		</div>
 		<div class="grid-container">
-			@if (1 != 0)
+			@if (GameState != null)
 			{
 				@for (int row = 0; row < GameState.GridJ1.Length; row++)
 				{
@@ -51,7 +54,7 @@
 						@for (int col = 0; col < GameState.GridJ1[0].Length; col++)
 						{
 							var currentCol = col;
-							<div class="grid-item pos-{row}-{col} pos-{col}" @onclick="() => AddBoatToGrid(currentRow, currentCol)">
+							<div class="grid-item pos-{row}-{col} pos-{col}" @onclick="() => AddBoatToGrid(currentRow, currentCol, placementHorizontal)">
 								<div class="grid-item pos-{row}-{col} pos-{col}">
 									@GetImageForCell(GameState.GridJ1,GameState.MaskedGridJ1, row, col)
 								</div>
@@ -67,7 +70,7 @@
 
 
 <div>
-	<button class="btn btn-primary" @onclick="() => OnButtonClicked()">
+	<button class="btn btn-primary" @onclick="() => OnButtonClicked(GameState.fleetJ1)">
 		Start
 	</button>
 </div>
@@ -77,11 +80,12 @@
 
 	private bool clic;
 	private Boat boatSelected;
+	private bool placementHorizontal;
 
 	[Parameter]
-	public EventCallback OnCallStart { get; set; }
+	public EventCallback<Models.Fleet> OnCallStart { get; set; }
 
-	private async Task OnButtonClicked()
+	private async Task OnButtonClicked(Models.Fleet placedBoat)
 	{
 		if (OnCallStart.HasDelegate)
 		{
@@ -90,22 +94,32 @@
 	}
 
 
-	private void SelectBoat(Boat boat)
+	private void SelectBoat(Boat boat, bool isHorizontal)
 	{
 		clic = true;
 		boatSelected = boat;
+		placementHorizontal = isHorizontal;
 	}
 
 
-	private void AddBoatToGrid(int row, int col)
+	private void AddBoatToGrid(int row, int col, bool isHorizontal)
     {
-		if(clic)
+		if(clic & CanBePlaced(row, col, boatSelected.Size, isHorizontal))
 		{
-			Console.WriteLine(row);
-			Console.WriteLine(col);
-			GameState.GridJ1[row][col] = boatSelected.Symbol;
+			Console.WriteLine(CanBePlaced(row, col, boatSelected.Size, isHorizontal));
+			for (int i = 0; i < boatSelected.Size; i++)
+			{
+				if(isHorizontal)
+				{
+					GameState.GridJ1[row][col+i] = boatSelected.Symbol;
+				}
+				else {
+					GameState.GridJ1[row+i][col] = boatSelected.Symbol;
+				}
+			}
 			boatSelected.X = row;
 			boatSelected.Y = col;
+			boatSelected.Horizontal = isHorizontal;
 			clic = false;
 		}
 		
@@ -113,25 +127,51 @@
 
 	private void DeleteBoat(Boat boat)
 	{
+		for (int i = 0; i < boat.Size; i++)
+		{
+			if(boat.Horizontal)
+			{
+				GameState.GridJ1[boat.X][boat.Y+i] = '\u0000';
+			}
+			else {
+				GameState.GridJ1[boat.X+i][boat.Y] = '\u0000';
+			}
+		}
 		boat.X = -1;
 		boat.Y = -1;
 	}
 
 
 	private bool IsPlaced(char symbol)
-{
-    for (int row = 0; row < GameState.GridJ1.Length; row++)
-    {
-        for (int col = 0; col < GameState.GridJ1[row].Length; col++)
-        {
-            if (GameState.GridJ1[row][col] == symbol)
-            {
-                return true; 
-            }
-        }
-    }
-    return false;
-}
+	{
+		for (int row = 0; row < GameState.GridJ1.Length; row++)
+		{
+			for (int col = 0; col < GameState.GridJ1[row].Length; col++)
+			{
+				if (GameState.GridJ1[row][col] == symbol)
+				{
+					return true; 
+				}
+			}
+		}
+		return false;
+	}
+
+
+	private bool CanBePlaced(int row, int col, int size, bool isHorizontal)
+	{
+		if(isHorizontal) {
+			if(col+size > GameState.GridJ1.Length | col < 0) {
+				return false;
+			}
+		}
+		else {
+			if(row+size > GameState.GridJ1.Length | row < 0) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 
 
@@ -162,12 +202,12 @@
 				}
 				// sinon si lettre a gauche => last
 				else if (y > 0 && grid[x][y-1] == letter){
-					imageUrl = "img/front_boat";
+					imageUrl = "img/back_boat";
 					rotationClass = "rotate-90";
 				}
 				// sinon si lettre a droite => first
 				else if (y < numberOfColumns-1 && grid[x][y+1] == letter){
-					imageUrl = "img/back_boat";
+					imageUrl = "img/front_boat";
 					rotationClass = "rotate-90";
 				}
 				// si lettre en haut et en bas => midle

@@ -32,6 +32,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Ajoute le service GridService au conteneur DI
 builder.Services.AddSingleton<GridService>();
 builder.Services.AddSingleton<Game>();
+builder.Services.AddSingleton<GameHistory>();
 builder.Services.AddScoped<IValidator<LevelRequest>, LevelRequestValidator>();
 builder.Services.AddScoped<IValidator<PlaceRequest>, PlaceRequestValidator>();
 builder.Services.AddScoped<IValidator<Boat>, BoatValidator>();
@@ -71,7 +72,7 @@ app.MapPost("/add-user", async (AppDbContext dbContext, [FromBody] User user) =>
     return Results.Ok(user);
 });
 
-app.MapPost("/setup", (GridService gridService, Game game, [FromBody] LevelRequest request, IValidator<LevelRequest> validator) =>
+app.MapPost("/setup", (GridService gridService, Game game, GameHistory gameHistory, [FromBody] LevelRequest request, IValidator<LevelRequest> validator) =>
 {
     Console.WriteLine("/setup call");
 
@@ -122,7 +123,6 @@ app.MapPost("/setup", (GridService gridService, Game game, [FromBody] LevelReque
     
 
 
-    Fleet fleet = new Fleet(true);
 
     Grid gridJ1 = gridService.CreateGrid(gridSize);
     Grid gridJ2 = gridService.CreateGrid(gridSize);
@@ -137,15 +137,21 @@ app.MapPost("/setup", (GridService gridService, Game game, [FromBody] LevelReque
     game.MaskedGridJ1 = maskedJ1;
     game.MaskedGridJ2 = maskedJ2;
     game.GameMode = aiLevel;
+    game.fleetJ1 = new Fleet(true);
 
-    var boats = fleet;
-    return Results.Ok(boats);
+    gameHistory = new GameHistory();
+
+    return Results.Ok(game);
 }).WithOpenApi();
 
-app.MapPost("/start", (GridService gridService, Game game, [FromBody] PlaceRequest request, IValidator<PlaceRequest> validator) =>
+
+
+app.MapPost("/start", (GridService gridService, Game game, GameHistory gameHistory, [FromBody] PlaceRequest request, IValidator<PlaceRequest> validator) =>
 {
     Console.WriteLine("/start call");
 
+    //coucou damien ❤️
+    /*
     // Valider la requête
     var validationResult = validator.Validate(request);
 
@@ -154,6 +160,7 @@ app.MapPost("/start", (GridService gridService, Game game, [FromBody] PlaceReque
     {
         return Results.BadRequest(validationResult.Errors);
     }
+    */
 
     Fleet boatsJ1 = new Fleet(true);
     if(request.Boats.Count > 0){
@@ -171,6 +178,8 @@ app.MapPost("/start", (GridService gridService, Game game, [FromBody] PlaceReque
 
     game.PrintGame();
 
+    gameHistory.InitSave(game);
+
     return Results.Ok(new
     {
         Id = game.Id,
@@ -186,7 +195,7 @@ app.MapPost("/start", (GridService gridService, Game game, [FromBody] PlaceReque
 
 
 
-app.MapPost("/tour", (GridService gridService, Game game, [FromBody] ShootRequest request, IValidator<ShootRequest> validator) =>
+app.MapPost("/tour", (GridService gridService, Game game, GameHistory gameHistory, [FromBody] ShootRequest request, IValidator<ShootRequest> validator) =>
 {
     Console.WriteLine("\n\n\nTour du joueur");
     var gameresult = new GameShootResponse{};
@@ -220,8 +229,9 @@ app.MapPost("/tour", (GridService gridService, Game game, [FromBody] ShootReques
     result = okResultJ.Value;
     gameresult.game = result.game;
     gameresult.shootResultJ2 = result.shootResultJ2;
-    game.PrintGame();
-
+    //game.PrintGame();
+    
+    gameHistory.SaveState(game);
 
     return Results.Ok(gameresult);
 })
@@ -233,12 +243,46 @@ app.MapPost("/shoot", (GridService gridService, Game game, [FromBody] ShootReque
 })
 .WithOpenApi();
 
-/*
-app.MapGet("/...", () =>
+app.MapGet("/history", (GameHistory gameHistory) =>
 {
-    //histo
+    // Vérifie si l'historique contient des états
+    if (gameHistory.GetHistory().Count == 0)
+    {
+        return Results.Ok("Aucun historique disponible.");
+    }
+
+    // Affiche l'historique complet
+    var historyInfo = new List<string>();
+    int index = 1;
+    foreach (var state in gameHistory.GetHistory())
+    {
+        historyInfo.Add($"--- État {index} ---");
+        historyInfo.Add($"Game ID: {state.Id}");
+        historyInfo.Add($"IsGameFinished: {state.IsGameFinished}");
+        historyInfo.Add($"GameMode: {state.GameMode}");
+        historyInfo.Add($"IaLvl: {state.IaLvl}");
+        historyInfo.Add($"PVE: {state.PVE}");
+        historyInfo.Add($"Grille J1: {string.Join("\n", state.GridJ1.Select(row => string.Join(' ', row)))}");
+        historyInfo.Add($"Grille J2: {string.Join("\n", state.GridJ2.Select(row => string.Join(' ', row)))}");
+        historyInfo.Add(""); // Ajout d'une séparation entre les états
+        index++;
+    }
+    Console.WriteLine($"{string.Join("\n", historyInfo)}");
+    return Results.Ok(string.Join("\n", historyInfo));
 }).WithOpenApi();
-*/
+
+
+app.MapGet("/undo", (GridService gridService, Game game, GameHistory gameHistory) => 
+{
+    Console.WriteLine($"/undo");
+    GameStateHisto previousState = gameHistory.Undo();
+    if (previousState != null)
+    {
+        game.SetGame(previousState);
+    }
+    return Results.Ok(game);
+})
+.WithOpenApi();
 
 (int, int) manage_call_ia(int ia, bool?[][] grid, Fleet fleet)
 {
@@ -299,7 +343,6 @@ app.MapGet("/...", () =>
 
                         if (j < grid[i].Length - 1 && grid[i][j + 1] == null) // Vérifie la case à droite
                             return (j+1,i);
-                        //return (j,i);
                     }
                 }
             }
@@ -309,12 +352,10 @@ app.MapGet("/...", () =>
 (int, int) GenerateValidIACoordinates_IA4(bool?[][] grid, Fleet fleet){
     bool areAllBoatsSunk = true;  //il y a un bateau touché mais non coulé
     areAllBoatsSunk = CheckSinkBoat(grid, fleet);
-    Console.WriteLine($"All boats sink {areAllBoatsSunk}");
     if(!areAllBoatsSunk){
         for (int i = 0; i < grid.Length; i++){
             for (int j = 0; j < grid[i].Length; j++){
                 if (grid[i][j] == true && CanShootAround(grid, i, j)){
-                    Console.WriteLine($"--- ICI {areAllBoatsSunk}");
                     if (i > 0 && grid[i - 1][j] == null) // Vérifie la case au-dessus
                         return (j,i-1);
                     
@@ -332,19 +373,15 @@ app.MapGet("/...", () =>
     }
 
     int x, y;
-    int attempts = 0;
     int nb_max_attempts = 15;
-    do {
-        (x, y) = GenerateValidIACoordinates_IA1(grid);
-        Console.WriteLine($"Test aléatoire = ({x},{y})");
-        attempts++;
-    } while (!CanShootAround(grid, x, y) && attempts < nb_max_attempts); // Limite à nb_max_attempts tentatives
-    
-    if (attempts >= nb_max_attempts) {
-        return GenerateValidIACoordinates_IA1(grid);
+    for (int attempts = 0; attempts < nb_max_attempts; attempts++){
+        (int, int) a = GenerateValidIACoordinates_IA1(grid);
+        (x, y) = a;
+        if (IsNotShootAround(grid, x, y)) 
+            return a;
     }
-
-    return (x, y);
+    return GenerateValidIACoordinates_IA1(grid);
+    
 }
 
 bool CheckSinkBoat(bool?[][] grid, Fleet fleet)
@@ -354,36 +391,107 @@ bool CheckSinkBoat(bool?[][] grid, Fleet fleet)
         .Sum(boat => boat.Size);        // Additionner la taille des bateaux coulés
 
     int trueCountInGrid = grid.Sum(row => row.Count(cell => cell == true));
-    Console.WriteLine($"CanShootAround totalSunkBoatSize={totalSunkBoatSize}, trueCountInGrid={trueCountInGrid}");
+    //Console.WriteLine($"CanShootAround totalSunkBoatSize={totalSunkBoatSize}, trueCountInGrid={trueCountInGrid}");
     bool areAllBoatsSunk = (totalSunkBoatSize == trueCountInGrid);
     return areAllBoatsSunk;
 }
 
 
-bool CanShootAround(bool?[][] grid, int i, int j)
+bool CanShootAround(bool?[][] grid, int j, int i)
 {
-    Console.WriteLine($"CanShootAround x={i}, y={j}");
     int nb = 0;
     // Vérifier les limites pour éviter les accès hors des bords de la grille
-    if (i > 0 && grid[i - 1][j] != null) // Vérifie la case au-dessus
+    if (i > 0 && grid[i - 1][j] == null) // Vérifie la case au-dessus
         nb++;
     
-    if (i < grid.Length - 1 && grid[i + 1][j] != null) // Vérifie la case en-dessous
+    if (i < grid.Length - 1 && grid[i + 1][j] == null) // Vérifie la case en-dessous
         nb++;
 
-    if (j > 0 && grid[i][j - 1] != null) // Vérifie la case à gauche
+    if (j > 0 && grid[i][j - 1] == null) // Vérifie la case à gauche
         nb++;
 
-    if (j < grid[i].Length - 1 && grid[i][j + 1] != null) // Vérifie la case à droite
+    if (j < grid[i].Length - 1 && grid[i][j + 1] == null) // Vérifie la case à droite
         nb++;
 
+    //PrintSurroundingCells(grid,i,j);
     // Si toutes les cases adjacentes sont null, retourner true
-    if (nb == 4){
-        return false;
-    }else{
+    if (nb > 0){
         return true;
+    }else{
+        return false;
     }
 }
+
+bool IsNotShootAround(bool?[][] grid, int j, int i)
+{
+    int nb = 0;
+    int possibility = 0;
+    // Vérifier les limites pour éviter les accès hors des bords de la grille
+    if (i > 0){
+        possibility ++;
+        if(grid[i - 1][j] == null)
+            nb++;
+    }
+    if (i < grid.Length - 1){
+        possibility ++;
+        if(grid[i + 1][j] == null)
+            nb++;
+    }
+    if (j > 0){
+        possibility ++;
+        if(grid[i][j - 1] == null)
+            nb++;
+    }
+    if (j < grid[i].Length - 1){
+        possibility ++;
+        if(grid[i][j + 1] == null)
+            nb++;
+    }
+    
+    
+    
+    bool isEqual = possibility == nb ? true : false;
+    //PrintSurroundingCells(grid,i,j);
+    // Si toutes les cases adjacentes sont null, retourner true
+    if (nb > 0 && isEqual){
+        return true;
+    }else{
+        return false;
+    }
+}
+
+void PrintSurroundingCells(bool?[][] grid, int i, int j)
+{
+
+
+    string topLeft = GetGridValue(grid, i - 1, j - 1);
+    string top = GetGridValue(grid, i - 1, j);
+    string topRight = GetGridValue(grid, i - 1, j + 1);
+
+    string left = GetGridValue(grid, i, j - 1);
+    string center = GetGridValue(grid, i, j);
+    string right = GetGridValue(grid, i, j + 1);
+
+    string bottomLeft = GetGridValue(grid, i + 1, j - 1);
+    string bottom = GetGridValue(grid, i + 1, j);
+    string bottomRight = GetGridValue(grid, i + 1, j + 1);
+
+    // Affichage
+    Console.WriteLine($"|{topLeft}|{top}|{topRight}|");
+    Console.WriteLine($"|{left}|{center}|{right}|");
+    Console.WriteLine($"|{bottomLeft}|{bottom}|{bottomRight}|\n");
+}
+
+string GetGridValue(bool?[][] grid, int i, int j)
+{
+    if (i < 0 || i >= grid.Length || j < 0 || j >= grid[i].Length)
+        return " "; // Hors de la grille
+
+    return grid[i][j] == true ? "T" :
+           grid[i][j] == false ? "F" : " "; // T pour true, F pour false, X pour null
+}
+
+
 
 
 static IResult shoot(GridService gridService, Game game, ShootRequest request, IValidator<ShootRequest> validator)
