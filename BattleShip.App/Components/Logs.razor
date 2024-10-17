@@ -54,6 +54,7 @@
                     if(gameResponse.IsGameFinished){
                         GameState.end = true;
                     }
+                    StateHasChanged();
 				}
 				else {
 					Console.WriteLine("no property");

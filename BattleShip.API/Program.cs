@@ -53,7 +53,7 @@ app.UseCors("AllowBlazorClient");
 app.MapGet("/", () => "Hello World")
 .WithOpenApi();
 
-app.MapPost("/setup", (GridService gridService, Game game, [FromBody] LevelRequest request, IValidator<LevelRequest> validator) =>
+app.MapPost("/setup", (GridService gridService, Game game, GameHistory gameHistory, [FromBody] LevelRequest request, IValidator<LevelRequest> validator) =>
 {
     Console.WriteLine("/setup call");
 
@@ -119,6 +119,9 @@ app.MapPost("/setup", (GridService gridService, Game game, [FromBody] LevelReque
     game.MaskedGridJ2 = maskedJ2;
     game.GameMode = aiLevel;
     game.fleetJ1 = new Fleet(true);
+
+    gameHistory = new GameHistory();
+
     return Results.Ok(game);
 }).WithOpenApi();
 
@@ -156,8 +159,7 @@ app.MapPost("/start", (GridService gridService, Game game, GameHistory gameHisto
 
     game.PrintGame();
 
-    gameHistory = new GameHistory();
-    gameHistory.SaveState(game);
+    gameHistory.InitSave(game);
 
     return Results.Ok(new
     {
@@ -208,7 +210,7 @@ app.MapPost("/tour", (GridService gridService, Game game, GameHistory gameHistor
     result = okResultJ.Value;
     gameresult.game = result.game;
     gameresult.shootResultJ2 = result.shootResultJ2;
-    game.PrintGame();
+    //game.PrintGame();
     
     gameHistory.SaveState(game);
 
@@ -253,13 +255,13 @@ app.MapGet("/history", (GameHistory gameHistory) =>
 
 app.MapGet("/undo", (GridService gridService, Game game, GameHistory gameHistory) => 
 {
+    Console.WriteLine($"/undo");
     GameStateHisto previousState = gameHistory.Undo();
     if (previousState != null)
     {
         game.SetGame(previousState);
     }
     return Results.Ok(game);
-    
 })
 .WithOpenApi();
 
@@ -322,7 +324,6 @@ app.MapGet("/undo", (GridService gridService, Game game, GameHistory gameHistory
 
                         if (j < grid[i].Length - 1 && grid[i][j + 1] == null) // Vérifie la case à droite
                             return (j+1,i);
-                        //return (j,i);
                     }
                 }
             }
@@ -332,12 +333,10 @@ app.MapGet("/undo", (GridService gridService, Game game, GameHistory gameHistory
 (int, int) GenerateValidIACoordinates_IA4(bool?[][] grid, Fleet fleet){
     bool areAllBoatsSunk = true;  //il y a un bateau touché mais non coulé
     areAllBoatsSunk = CheckSinkBoat(grid, fleet);
-    Console.WriteLine($"All boats sink {areAllBoatsSunk}");
     if(!areAllBoatsSunk){
         for (int i = 0; i < grid.Length; i++){
             for (int j = 0; j < grid[i].Length; j++){
                 if (grid[i][j] == true && CanShootAround(grid, i, j)){
-                    Console.WriteLine($"--- ICI {areAllBoatsSunk}");
                     if (i > 0 && grid[i - 1][j] == null) // Vérifie la case au-dessus
                         return (j,i-1);
                     
@@ -356,19 +355,11 @@ app.MapGet("/undo", (GridService gridService, Game game, GameHistory gameHistory
 
     int x, y;
     int nb_max_attempts = 15;
-    bool R = false;
-    for (int attempts = 0; attempts < nb_max_attempts; attempts++)
-    {
+    for (int attempts = 0; attempts < nb_max_attempts; attempts++){
         (int, int) a = GenerateValidIACoordinates_IA1(grid);
         (x, y) = a;
-
-        R = IsNotShootAround(grid, x, y);
-        Console.WriteLine($"Test aléatoire = ({x},{y}) & R = {R}, attempts = {attempts + 1} < nb_max_attempts = {nb_max_attempts}");
-
-        if (R) 
-        {
+        if (IsNotShootAround(grid, x, y)) 
             return a;
-        }
     }
     return GenerateValidIACoordinates_IA1(grid);
     
@@ -381,7 +372,7 @@ bool CheckSinkBoat(bool?[][] grid, Fleet fleet)
         .Sum(boat => boat.Size);        // Additionner la taille des bateaux coulés
 
     int trueCountInGrid = grid.Sum(row => row.Count(cell => cell == true));
-    Console.WriteLine($"CanShootAround totalSunkBoatSize={totalSunkBoatSize}, trueCountInGrid={trueCountInGrid}");
+    //Console.WriteLine($"CanShootAround totalSunkBoatSize={totalSunkBoatSize}, trueCountInGrid={trueCountInGrid}");
     bool areAllBoatsSunk = (totalSunkBoatSize == trueCountInGrid);
     return areAllBoatsSunk;
 }
@@ -403,7 +394,6 @@ bool CanShootAround(bool?[][] grid, int j, int i)
     if (j < grid[i].Length - 1 && grid[i][j + 1] == null) // Vérifie la case à droite
         nb++;
 
-    Console.WriteLine($"CanShootAround x={j}, y={i}, nb={nb}");
     //PrintSurroundingCells(grid,i,j);
     // Si toutes les cases adjacentes sont null, retourner true
     if (nb > 0){
