@@ -89,8 +89,13 @@
 	{
 		if (OnCallStart.HasDelegate)
 		{
-			await OnCallStart.InvokeAsync();
+			await OnCallStart.InvokeAsync(placedBoat);
 		}
+	}
+
+	private async Task Strt(Models.Fleet placedBoat)
+	{
+		Console.WriteLine(placedBoat.Boats[1].Id);
 	}
 
 
