@@ -8,6 +8,8 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Diagnostics;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
+
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +24,10 @@ builder.Services.AddCors(options =>
               .AllowCredentials(); // Si tu utilises des cookies ou des identifiants
     });
 });
+
+// Ajout du DbContext pour gérer la base de données
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Ajoute le service GridService au conteneur DI
 builder.Services.AddSingleton<GridService>();
@@ -39,6 +45,12 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    dbContext.Database.Migrate(); // Appliquer les migrations
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -51,6 +63,13 @@ app.UseCors("AllowBlazorClient");
 
 app.MapGet("/", () => "Hello World")
 .WithOpenApi();
+
+app.MapPost("/add-user", async (AppDbContext dbContext, [FromBody] User user) =>
+{
+    dbContext.Users.Add(user);
+    await dbContext.SaveChangesAsync();
+    return Results.Ok(user);
+});
 
 app.MapPost("/setup", (GridService gridService, Game game, [FromBody] LevelRequest request, IValidator<LevelRequest> validator) =>
 {
