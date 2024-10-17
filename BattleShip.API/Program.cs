@@ -104,7 +104,6 @@ app.MapPost("/setup", (GridService gridService, Game game, [FromBody] LevelReque
     
 
 
-    Fleet fleet = new Fleet(true);
 
     Grid gridJ1 = gridService.CreateGrid(gridSize);
     Grid gridJ2 = gridService.CreateGrid(gridSize);
@@ -119,9 +118,8 @@ app.MapPost("/setup", (GridService gridService, Game game, [FromBody] LevelReque
     game.MaskedGridJ1 = maskedJ1;
     game.MaskedGridJ2 = maskedJ2;
     game.GameMode = aiLevel;
-
-    var boats = fleet;
-    return Results.Ok(boats);
+    game.fleetJ1 = new Fleet(true);
+    return Results.Ok(game);
 }).WithOpenApi();
 
 
@@ -130,6 +128,8 @@ app.MapPost("/start", (GridService gridService, Game game, GameHistory gameHisto
 {
     Console.WriteLine("/start call");
 
+    //coucou damien ❤️
+    /*
     // Valider la requête
     var validationResult = validator.Validate(request);
 
@@ -138,6 +138,7 @@ app.MapPost("/start", (GridService gridService, Game game, GameHistory gameHisto
     {
         return Results.BadRequest(validationResult.Errors);
     }
+    */
 
     Fleet boatsJ1 = new Fleet(true);
     if(request.Boats.Count > 0){
@@ -208,6 +209,7 @@ app.MapPost("/tour", (GridService gridService, Game game, GameHistory gameHistor
     gameresult.game = result.game;
     gameresult.shootResultJ2 = result.shootResultJ2;
     game.PrintGame();
+    
     gameHistory.SaveState(game);
 
     return Results.Ok(gameresult);
