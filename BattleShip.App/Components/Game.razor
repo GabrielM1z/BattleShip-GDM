@@ -252,7 +252,8 @@
 						if(gameReponse.IsGameFinished){
 							GameState.end = true;
 						}
-					}
+						StateHasChanged();
+					}	
 					else
 					{
 						Console.WriteLine("shoot incorrect");
@@ -281,4 +282,15 @@
         public int y { get; set; }
 		public int j { get; set; }
     }
+
+    protected override void OnInitialized()
+    {
+        GameState.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        GameState.OnChange -= StateHasChanged;
+    }
+
 }
