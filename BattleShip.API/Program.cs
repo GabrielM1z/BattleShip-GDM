@@ -163,17 +163,24 @@ app.MapPost("/start", (GridService gridService, Game game, GameHistory gameHisto
     */
 
     Fleet boatsJ1 = new Fleet(true);
-    if(request.Boats.Count > 0){
-        boatsJ1.Boats = request.Boats;
+    if (request.Boats != null)
+    {
+        Console.WriteLine($"request.Boats != null");
+        foreach (Boat boat in request.Boats)
+        {
+            Console.WriteLine($"Boat boat in request.Boats");
+            boatsJ1.SetBoatPosition(boat.Id,boat.X,boat.Y,boat.Horizontal);
+            Console.WriteLine("Ajout");
+        }
     }
+
     Fleet boatsJ2 = new Fleet(true);
 
-    gridService.PlaceBoat(game.GridJ1, boatsJ1.GetBoats());
+    gridService.PlaceBoat(game.GridJ1, game.fleetJ1.GetBoats());
     gridService.PlaceBoat(game.GridJ2, boatsJ2.GetBoats());
 
 
-    
-    game.fleetJ1 = boatsJ1;
+    game.fleetJ2 = 
     game.fleetJ2 = boatsJ2;
 
     game.PrintGame();
