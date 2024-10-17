@@ -26,6 +26,9 @@ builder.Services.AddCors(options =>
 // Ajoute le service GridService au conteneur DI
 builder.Services.AddSingleton<GridService>();
 builder.Services.AddSingleton<Game>();
+builder.Services.AddScoped<IValidator<LevelRequest>, LevelRequestValidator>();
+builder.Services.AddScoped<IValidator<PlaceRequest>, PlaceRequestValidator>();
+builder.Services.AddScoped<IValidator<Boat>, BoatValidator>();
 builder.Services.AddScoped<IValidator<ShootRequest>, ShootRequestValidator>();
 
 
@@ -49,9 +52,19 @@ app.UseCors("AllowBlazorClient");
 app.MapGet("/", () => "Hello World")
 .WithOpenApi();
 
-app.MapPost("/setup", (GridService gridService, Game game, [FromBody] LevelRequest request) =>
+app.MapPost("/setup", (GridService gridService, Game game, [FromBody] LevelRequest request, IValidator<LevelRequest> validator) =>
 {
     Console.WriteLine("/setup call");
+
+    // Valider la requête
+    var validationResult = validator.Validate(request);
+
+    // Si la validation échoue, renvoyer une erreur
+    if (!validationResult.IsValid)
+    {
+        return Results.BadRequest(validationResult.Errors);
+    }
+
     var gameId = Guid.NewGuid();
 
 
@@ -110,16 +123,22 @@ app.MapPost("/setup", (GridService gridService, Game game, [FromBody] LevelReque
     return Results.Ok(boats);
 }).WithOpenApi();
 
-
-app.MapPost("/start", (GridService gridService, Game game, [FromBody] PlaceRequest requeste) =>
+app.MapPost("/start", (GridService gridService, Game game, [FromBody] PlaceRequest request, IValidator<PlaceRequest> validator) =>
 {
     Console.WriteLine("/start call");
 
-    
+    // Valider la requête
+    var validationResult = validator.Validate(request);
+
+    // Si la validation échoue, renvoyer une erreur
+    if (!validationResult.IsValid)
+    {
+        return Results.BadRequest(validationResult.Errors);
+    }
 
     Fleet boatsJ1 = new Fleet(true);
-    if(requeste.Boats.Count > 0){
-        boatsJ1.Boats = requeste.Boats;
+    if(request.Boats.Count > 0){
+        boatsJ1.Boats = request.Boats;
     }
     Fleet boatsJ2 = new Fleet(true);
 
