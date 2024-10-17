@@ -80,7 +80,7 @@
 
 	private bool clic;
 	private Boat boatSelected;
-	private bool placementHorizontal;
+	private bool placementHorizontal = true;
 
 	[Parameter]
 	public EventCallback<Models.Fleet> OnCallStart { get; set; }
@@ -109,24 +109,28 @@
 
 	private void AddBoatToGrid(int row, int col, bool isHorizontal)
     {
-		if(clic & CanBePlaced(row, col, boatSelected.Size, isHorizontal))
+		if(clic)
 		{
-			Console.WriteLine(CanBePlaced(row, col, boatSelected.Size, isHorizontal));
-			for (int i = 0; i < boatSelected.Size; i++)
+			if(CanBePlaced(row, col, boatSelected.Size, isHorizontal))
 			{
-				if(isHorizontal)
+				Console.WriteLine(CanBePlaced(row, col, boatSelected.Size, isHorizontal));
+				for (int i = 0; i < boatSelected.Size; i++)
 				{
-					GameState.GridJ1[row][col+i] = boatSelected.Symbol;
+					if(isHorizontal)
+					{
+						GameState.GridJ1[row][col+i] = boatSelected.Symbol;
+					}
+					else {
+						GameState.GridJ1[row+i][col] = boatSelected.Symbol;
+					}
 				}
-				else {
-					GameState.GridJ1[row+i][col] = boatSelected.Symbol;
-				}
+				boatSelected.X = col;
+				boatSelected.Y = row;
+				boatSelected.Horizontal = isHorizontal;
+				clic = false;
 			}
-			boatSelected.X = row;
-			boatSelected.Y = col;
-			boatSelected.Horizontal = isHorizontal;
-			clic = false;
 		}
+		
 		
     }
 
