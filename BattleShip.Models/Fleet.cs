@@ -97,7 +97,20 @@ namespace BattleShip.Models
 			}
 			return "";
 		}
+		public void SetBoatPosition(int boatId, int x, int y, bool horizontal)
+		{
+			Console.WriteLine($"SetBoatPosition");
+			var boat = Boats.FirstOrDefault(b => b.Id == boatId);
 
+			if (boat != null)
+			{
+				boat.X = x;
+				boat.Y = y;
+				boat.Horizontal = horizontal;
 
+			}
+			Console.WriteLine($"----PlaceBoat {boat.Id}= ({boat.X},{boat.Y})");
+		}
 	}
+
 }
