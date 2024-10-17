@@ -123,15 +123,21 @@ else
 
 
 
-    private async Task StartGame()
+    private async Task StartGame(Fleet fleetPlaced)
     {	
-
 		Console.WriteLine("start");
+		Console.WriteLine(fleetPlaced);
+
+		List<Boat> boats = [];
+		if(fleetPlaced != null)
+		{
+			boats = fleetPlaced.Boats;
+		}
 		
 		// Ce qu'on va send	
 		var placeRequest = new BattleShip.Models.PlaceRequest
 		{
-			Boats = []
+			Boats = boats
 		};
 
 		// on serialize en JSON
