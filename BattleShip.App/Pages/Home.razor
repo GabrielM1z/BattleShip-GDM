@@ -108,14 +108,15 @@ else
 
 				Console.WriteLine(json);
 				// Déserialization du JSON
-                var fleetResponse = System.Text.Json.JsonSerializer.Deserialize<BattleShip.Models.Fleet>(json, options);
+                var gameResponse = System.Text.Json.JsonSerializer.Deserialize<BattleShip.Models.Game>(json, options);
 
 				// On met à jour notre singleton
-				if (fleetResponse != null)
+				if (gameResponse != null)
 				{
-					GameState.fleetJ1 = fleetResponse;
+					GameState.fleetJ1 = gameResponse.fleetJ1;
+					GameState.GridJ1 = gameResponse.GridJ1;
+					Console.WriteLine(gameResponse.GridJ1);
 				}
-				
 			}
 		}
 	}
