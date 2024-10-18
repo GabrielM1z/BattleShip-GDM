@@ -223,6 +223,7 @@ app.MapPost("/tour", async (AppDbContext dbContext, GridService gridService, Gam
     {
         if (isGameFinished)
         {
+            game.user.NbCoup++;
             // Récupérer l'utilisateur
             var userRecup = await dbContext.Users.FirstOrDefaultAsync(u => u.Name == game.user.Name);
 
