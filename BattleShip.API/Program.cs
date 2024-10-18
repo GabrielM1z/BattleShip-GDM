@@ -143,6 +143,7 @@ app.MapPost("/setup", async (AppDbContext dbContext, GridService gridService, Ga
     game.MaskedGridJ2 = maskedJ2;
     game.GameMode = aiLevel;
     game.fleetJ1 = new Fleet(true);
+    game.fleetJ2 = new Fleet(true);
 
     gameHistory = new GameHistory();
 

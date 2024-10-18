@@ -88,7 +88,7 @@ namespace BattleShip.Models
 			{
 				if (!boat.IsAlive)
 				{
-					return $"Coulé! Le {boat.Name} est hors sous l'océan.";
+					return $"{boat.Name} coulé!";
 				}
 				else
 				{

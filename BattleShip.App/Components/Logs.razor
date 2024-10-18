@@ -11,11 +11,12 @@
         </button>
     </div>
     <div class="logText">
-        @foreach (var log in GameState.Logs)
+        @for (int i = GameState.Logs.Count - 1; i >= 0; i--)
         {
-            <div>@log</div>
+            <div>@GameState.Logs[i]</div>
         }
     </div>
+
 </div>
 
 
