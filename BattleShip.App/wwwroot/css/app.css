@@ -101,8 +101,13 @@ body {
 
 /* btn start */
 div.start{
-    margin: 5px;
+    margin: auto;
+    margin-bottom: 30px;
+    padding: 3px;
     text-align: center;
+    border: #1bacd4 solid 3px;
+    border-radius: 10px;
+    width: fit-content;
 }
 
 /* Grid */
@@ -303,9 +308,45 @@ div.container-placement{
     display: flex;
     flex-direction: row;
     justify-content: center;
+    align-items: center;
+}
+
+div.placement-grid{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 div.list-boat {
     border-radius: 10px;
     border: #00305e solid 1px;
 }
+
+div.list-boat div.boat {
+    border: #1bacd4 solid 1px;
+    border-radius: 10px;
+    width: 300px;
+    margin: 5px;
+    padding-bottom: 10px;
+    padding-top: 0px;
+}
+
+div.list-boat div.boat p {
+    text-align: center;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    font-size: large;
+    font-weight: bold;
+}
+
+div.group-btn {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+div.placement-title h3 {
+    color: #9ff2fd;
+}
+
+
