@@ -1,6 +1,11 @@
 # BattleShip-GDM
 
-# Niveau des IAs
+## Groupe
+Maxence Jamme
+Gabriel Martinez
+Damien Pascual
+
+## Niveau des IAs
 nous avons fait plusieurs niveau d'IA
 - Niveau 0 : L'IA tire systématiquement sur toutes les positions, en parcourant la grille de gauche à droite et de haut en bas, sans aucune logique particulière.
 

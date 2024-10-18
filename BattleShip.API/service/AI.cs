@@ -17,7 +17,7 @@ namespace BattleShip.API.Service
             }else if(ia == 4){
                 return GenerateValidIACoordinates_IA4(grid, fleet);
             }else if(ia == 5){
-                return GenerateValidIACoordinates_IA5(grid, fleet);
+                return GenerateValidIACoordinates_IA4(grid, fleet);
             }else{
                 return GenerateValidIACoordinates_IA1(grid);
             }
@@ -90,25 +90,6 @@ namespace BattleShip.API.Service
             return GenerateValidIACoordinates_IA1(grid);
             
         }
-        (int, int) GenerateValidIACoordinates_IA5(bool?[][] grid, Fleet fleet){
-            bool areAllBoatsSunk = true;  //il y a un bateau touché mais non coulé
-            areAllBoatsSunk = CheckSinkBoat(grid, fleet);
-            if(!areAllBoatsSunk){
-                GenerateValidIACoordinates_IA3(grid);
-            }
-
-            int x, y;
-            int nb_max_attempts = 15;
-            for (int attempts = 0; attempts < nb_max_attempts; attempts++){
-                (int, int) a = GenerateValidIACoordinates_IA1(grid);
-                (x, y) = a;
-                if (IsNotShootAround(grid, x, y)) 
-                    return a;
-            }
-            return GenerateValidIACoordinates_IA1(grid);
-            
-        }
-
 
         bool CheckSinkBoat(bool?[][] grid, Fleet fleet)
         {
