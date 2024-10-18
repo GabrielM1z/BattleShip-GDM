@@ -72,13 +72,9 @@ else
 
 	private async Task SetUp(string lvl)
 	{
-		Console.WriteLine("placement bato");
-
-		// TODO mettre en mode placeBoat
+		// mettre en mode placeBoat
 		GameState.placeBoat = true;
 		GameState.NotifyStateChanged();
-
-		Console.WriteLine(lvl);
 
 		var levelRequest = new BattleShip.Models.LevelRequest
 		{
@@ -106,7 +102,6 @@ else
 					Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping // Gère les caractères Unicode comme '\u0000'
 				};
 
-				Console.WriteLine(json);
 				// Déserialization du JSON
                 var gameResponse = System.Text.Json.JsonSerializer.Deserialize<BattleShip.Models.Game>(json, options);
 
@@ -120,8 +115,6 @@ else
 					GameState.end = gameResponse.IsGameFinished;
 					GameState.fleetJ1 = gameResponse.fleetJ1;
 					GameState.fleetJ2 = gameResponse.fleetJ2;
-
-					Console.WriteLine(gameResponse.GridJ1);
 				}
 			}
 		}
@@ -131,9 +124,6 @@ else
 
     private async Task StartGame(Fleet fleetPlaced)
     {	
-		Console.WriteLine("start");
-		Console.WriteLine(fleetPlaced);
-
 		List<Boat> boats = [];
 		if(fleetPlaced != null)
 		{
