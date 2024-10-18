@@ -1,4 +1,6 @@
 
+using System.Reflection.Metadata;
+
 namespace BattleShip.Models
 {
 	public class Game
@@ -14,6 +16,7 @@ namespace BattleShip.Models
 		public int PVE { get; set;}
 		public Fleet fleetJ1 {get; set;}
 		public Fleet fleetJ2 {get; set;}
+		public User user {get; set;}
 
 		// Méthode pour afficher les informations du jeu
 		public void PrintGame()

@@ -37,7 +37,7 @@ builder.Services.AddScoped<IValidator<SetupRequest>, SetupRequestValidator>();
 builder.Services.AddScoped<IValidator<PlaceRequest>, PlaceRequestValidator>();
 builder.Services.AddScoped<IValidator<Boat>, BoatValidator>();
 builder.Services.AddScoped<IValidator<ShootRequest>, ShootRequestValidator>();
-
+builder.Services.AddScoped<IValidator<UpdateUserRequest>, UpdateUserRequestValidator>();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -65,7 +65,7 @@ app.UseCors("AllowBlazorClient");
 app.MapGet("/", () => "Hello World")
 .WithOpenApi();
 
-app.MapPost("/setup", async (AppDbContext dbContext, GridService gridService, Game game, GameHistory gameHistory, [FromBody] SetupRequest request, IValidator<SetupRequest> validator) =>
+app.MapPost("/setup", (GridService gridService, Game game, GameHistory gameHistory, [FromBody] SetupRequest request, IValidator<SetupRequest> validator) =>
 {
     Console.WriteLine("/setup call");
 
@@ -79,16 +79,6 @@ app.MapPost("/setup", async (AppDbContext dbContext, GridService gridService, Ga
     }
 
     User user = new User(request.User);
-    var existingUser = await dbContext.Users
-        .FirstOrDefaultAsync(u => u.Name == user.Name);
-
-    if (existingUser == null)
-    {
-        
-        // Si l'utilisateur n'existe pas, on l'ajoute
-        dbContext.Users.Add(user);
-    }
-    await dbContext.SaveChangesAsync();
 
     var gameId = Guid.NewGuid();
 
@@ -136,6 +126,7 @@ app.MapPost("/setup", async (AppDbContext dbContext, GridService gridService, Ga
     var maskedJ2 = gridService.CreateMaskedGrid(gridJ2.GridArray);
 
     game.Id = gameId;
+    game.user = user;
     game.IsGameFinished = false;
     game.GridJ1 = gridJ1.GridArray;
     game.GridJ2 = gridJ2.GridArray;
@@ -205,7 +196,7 @@ app.MapPost("/start", (GridService gridService, Game game, GameHistory gameHisto
 
 
 
-app.MapPost("/tour", (GridService gridService, Game game, GameHistory gameHistory, [FromBody] ShootRequest request, IValidator<ShootRequest> validator) =>
+app.MapPost("/tour", async (AppDbContext dbContext, GridService gridService, Game game, GameHistory gameHistory, [FromBody] ShootRequest request, IValidator<ShootRequest> validator) =>
 {
     Console.WriteLine("\n\n\nTour du joueur");
     var gameresult = new GameShootResponse{};
@@ -222,9 +213,45 @@ app.MapPost("/tour", (GridService gridService, Game game, GameHistory gameHistor
     bool isHit = result.shootResultJ1.IsHit;
     bool isGameFinished = result.game.IsGameFinished;
 
-    if(!canShoot || isGameFinished){
-        return playerShootResult;
+    if (canShoot && !isGameFinished)
+    {
+        game.user.NbCoup++;
     }
+    else
+    {
+        if (isGameFinished)
+        {
+            // Récupérer l'utilisateur
+            var userRecup = await dbContext.Users.FirstOrDefaultAsync(u => u.Name == game.user.Name);
+
+            // Vérifie si l'utilisateur existe
+            if (userRecup != null)
+            {
+                // Si le nombre de coups du jeu est supérieur à celui de l'utilisateur récupéré, on met à jour
+                if (game.user.NbCoup < userRecup.NbCoup)
+                {
+                    userRecup.NbCoup = game.user.NbCoup; // Met à jour l'utilisateur récupéré
+                }
+            }
+            else
+            {
+                // Si l'utilisateur n'existe pas, on le crée
+                userRecup = game.user;
+                dbContext.Users.Add(userRecup);
+            }
+
+            // Incrémente le nombre de victoires
+            userRecup.NbVictoire++;
+
+            // Enregistre ou met à jour l'utilisateur dans la base de données
+            dbContext.Users.Update(userRecup);
+
+            // Sauvegarde les changements dans la base de données
+            await dbContext.SaveChangesAsync();
+        }
+        return playerShootResult; // Si le joueur ne peut pas tirer ou si la partie est finie
+    }
+    
     gameresult.shootResultJ1 = result.shootResultJ1;
     
 
@@ -292,9 +319,34 @@ app.MapGet("/undo", (GridService gridService, Game game, GameHistory gameHistory
     if (previousState != null)
     {
         game.SetGame(previousState);
+        game.user.NbCoup++; // Incrémenter le nombre de coups joués
     }
     game.PrintGame();
     return Results.Ok(game);
+})
+.WithOpenApi();
+
+app.MapGet("/getLeaderBoard", async (AppDbContext dbContext) =>
+{
+    // Récupérer tous les utilisateurs
+    var users = await dbContext.Users.ToListAsync();
+
+    // Créer les dictionnaires pour le classement
+    var coupCountMap = users.ToDictionary(u => u.Name, u => u.NbCoup);
+    var victoryCountMap = users.ToDictionary(u => u.Name, u => u.NbVictoire);
+
+    // Trier les dictionnaires par ordre croissant
+    var sortedCoupCount = coupCountMap.OrderBy(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
+    var sortedVictoryCount = victoryCountMap.OrderBy(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
+
+    // Créer l'objet de réponse
+    var response = new LeaderBoardResult
+    {
+        UserCoupCount = sortedCoupCount,
+        UserVictoryCount = sortedVictoryCount
+    };
+
+    return Results.Ok(response);
 })
 .WithOpenApi();
 
