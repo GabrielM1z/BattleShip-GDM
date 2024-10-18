@@ -67,8 +67,20 @@ app.MapGet("/", () => "Hello World")
 
 app.MapPost("/add-user", async (AppDbContext dbContext, [FromBody] User user) =>
 {
+    var existingUser = await dbContext.Users
+        .FirstOrDefaultAsync(u => u.Name == user.Name);
+
+    if (existingUser != null)
+    {
+        // Si l'utilisateur existe déjà, le retourner
+        return Results.Ok(existingUser);
+    }
+
+    // Si l'utilisateur n'existe pas, on l'ajoute
     dbContext.Users.Add(user);
     await dbContext.SaveChangesAsync();
+
+    // Retourne le nouvel utilisateur ajouté
     return Results.Ok(user);
 });
 
