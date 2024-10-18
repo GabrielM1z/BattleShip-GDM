@@ -88,7 +88,7 @@ namespace BattleShip.Models
 			{
 				if (!boat.IsAlive)
 				{
-					return $"Coulé! Le navire {boat.Symbol} est hors service.";
+					return $"{boat.Name} coulé!";
 				}
 				else
 				{
