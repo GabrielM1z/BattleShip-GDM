@@ -17,10 +17,11 @@
 			<p>PvE</p>
 		</div>
 		<div class="btn-selection">
+			<button class="btn btn-outline-info" @onclick="() => OnButtonClicked(level0)">Level 0 (8x8)</button>
 			<button class="btn btn-outline-info" @onclick="() => OnButtonClicked(level1)">Level 1 (8x8)</button>
-			<button class="btn btn-outline-info" @onclick="() => OnButtonClicked(level2)">Level 2 (8x8)</button>
+			<button class="btn btn-outline-info" @onclick="() => OnButtonClicked(level2)">Level 2 (10x10)</button>
 			<button class="btn btn-outline-info" @onclick="() => OnButtonClicked(level3)">Level 3 (10x10)</button>
-			<button class="btn btn-outline-info" @onclick="() => OnButtonClicked(level4)">Level 4 (10x10)</button>
+			<button class="btn btn-outline-info" @onclick="() => OnButtonClicked(level4)">Level 4 (12x12)</button>
 		</div>
 	</div>
 
@@ -40,6 +41,7 @@
 
 @code {
 	private string Name { get; set; } = string.Empty;
+	private string level0 = "10";
 	private string level1 = "11";
 	private string level2 = "12";
 	private string level3 = "13";

@@ -31,6 +31,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Ajoute le service GridService au conteneur DI
 builder.Services.AddSingleton<GridService>();
+builder.Services.AddSingleton<AI>();
 builder.Services.AddSingleton<Game>();
 builder.Services.AddSingleton<GameHistory>();
 builder.Services.AddScoped<IValidator<SetupRequest>, SetupRequestValidator>();
@@ -120,7 +121,7 @@ app.MapPost("/setup", async (AppDbContext dbContext, GridService gridService, Ga
             break;
         case 4:
             gridSize = 12; // Grille de taille 12
-            aiLevel = pve ? 4 : 0; // Niveau IA 4
+            aiLevel = pve ? 5 : 0; // Niveau IA 4
             break;
         default:
             throw new ArgumentException("Code de niveau non valide.");
@@ -206,7 +207,7 @@ app.MapPost("/start", (GridService gridService, Game game, GameHistory gameHisto
 
 
 
-app.MapPost("/tour", (GridService gridService, Game game, GameHistory gameHistory, [FromBody] ShootRequest request, IValidator<ShootRequest> validator) =>
+app.MapPost("/tour", (GridService gridService, Game game, AI AI, GameHistory gameHistory, [FromBody] ShootRequest request, IValidator<ShootRequest> validator) =>
 {
     Console.WriteLine("\n\n\nTour du joueur");
     var gameresult = new GameShootResponse{};
@@ -229,7 +230,7 @@ app.MapPost("/tour", (GridService gridService, Game game, GameHistory gameHistor
     gameresult.shootResultJ1 = result.shootResultJ1;
     
 
-    var (xIa, yIa) = manage_call_ia(game.GameMode, game.MaskedGridJ1, game.fleetJ1);    
+    var (xIa, yIa) = AI.manage_call_ia(game.GameMode, game.MaskedGridJ1, game.fleetJ1);    
     Console.WriteLine($"Tour de l'IA:{game.GameMode}");
     var aiShootResult = shoot(gridService, game, new ShootRequest { X = xIa, Y = yIa, J = 2 }, validator);
     if (aiShootResult is not Ok<GameShootResponse> okResultJ)
@@ -255,36 +256,6 @@ app.MapPost("/shoot", (GridService gridService, Game game, [FromBody] ShootReque
 })
 .WithOpenApi();
 
-app.MapGet("/history", (GameHistory gameHistory) =>
-{
-    // Vérifie si l'historique contient des états
-    if (gameHistory.GetHistory().Count == 0)
-    {
-        return Results.Ok("Aucun historique disponible.");
-    }
-
-    // Affiche l'historique complet
-    var historyInfo = new List<string>();
-    int index = 1;
-    foreach (var state in gameHistory.GetHistory())
-    {
-        historyInfo.Add($"--- État {index} ---");
-        historyInfo.Add($"Game ID: {state.Id}");
-        historyInfo.Add($"IsGameFinished: {state.IsGameFinished}");
-        historyInfo.Add($"GameMode: {state.GameMode}");
-        historyInfo.Add($"IaLvl: {state.IaLvl}");
-        historyInfo.Add($"PVE: {state.PVE}");
-        historyInfo.Add($"Grille J1: {string.Join("\n", state.GridJ1.Select(row => string.Join(' ', row)))}");
-        historyInfo.Add($"Grille J2: {string.Join("\n", state.GridJ2.Select(row => string.Join(' ', row)))}");
-        historyInfo.Add($"Grille J1: {string.Join("\n", state.MaskedGridJ1.Select(row => string.Join(' ', row)))}");
-        historyInfo.Add($"Grille J2: {string.Join("\n", state.MaskedGridJ2.Select(row => string.Join(' ', row)))}");
-        historyInfo.Add(""); // Ajout d'une séparation entre les états
-        index++;
-    }
-    Console.WriteLine($"{string.Join("\n", historyInfo)}");
-    return Results.Ok(string.Join("\n", historyInfo));
-}).WithOpenApi();
-
 
 app.MapGet("/undo", (GridService gridService, Game game, GameHistory gameHistory) => 
 {
@@ -299,211 +270,8 @@ app.MapGet("/undo", (GridService gridService, Game game, GameHistory gameHistory
 })
 .WithOpenApi();
 
-(int, int) manage_call_ia(int ia, bool?[][] grid, Fleet fleet)
-{
-    if(ia == 1){
-        return GenerateValidIACoordinates_IA1(grid);
-    }else if(ia == 2){
-        return GenerateValidIACoordinates_IA2(grid);
-    }else if(ia == 3){
-        return GenerateValidIACoordinates_IA3(grid);
-    }else if(ia == 4){
-        return GenerateValidIACoordinates_IA4(grid, fleet);
-    }else{
-        return GenerateValidIACoordinates_IA1(grid);
-    }
-}
-
-(int, int) GenerateValidIACoordinates_IA1(bool?[][] grid){
-    Random random = new Random();
-    int xIa, yIa;
-    do
-    {
-        xIa = random.Next(grid.Length);
-        yIa = random.Next(grid[0].Length);
-    }
-    while (grid[yIa][xIa] != null); 
-
-    return (xIa, yIa);
-}
-(int, int) GenerateValidIACoordinates_IA2(bool?[][] grid){
-    for (int i = 0; i < grid.Length; i++)
-            {
-                for (int j = 0; j < grid[i].Length; j++)
-                {
-                    if (grid[i][j]== null)
-                    {
-                        return (j,i);
-                    }
-                }
-            }
-    return (0,0);
-
-}
-(int, int) GenerateValidIACoordinates_IA3(bool?[][] grid){
-    for (int i = 0; i < grid.Length; i++)
-            {
-                for (int j = 0; j < grid[i].Length; j++)
-                {
-                    if (grid[i][j] == true && CanShootAround(grid, i, j))
-                    {
-                        if (i > 0 && grid[i - 1][j] == null) // Vérifie la case au-dessus
-                            return (j,i-1);
-                        
-                        if (i < grid.Length - 1 && grid[i + 1][j] == null) // Vérifie la case en-dessous
-                            return (j,i+1);
-
-                        if (j > 0 && grid[i][j - 1] == null) // Vérifie la case à gauche
-                            return (j-1,i);
-
-                        if (j < grid[i].Length - 1 && grid[i][j + 1] == null) // Vérifie la case à droite
-                            return (j+1,i);
-                    }
-                }
-            }
-    return GenerateValidIACoordinates_IA1(grid);
-
-}
-(int, int) GenerateValidIACoordinates_IA4(bool?[][] grid, Fleet fleet){
-    bool areAllBoatsSunk = true;  //il y a un bateau touché mais non coulé
-    areAllBoatsSunk = CheckSinkBoat(grid, fleet);
-    if(!areAllBoatsSunk){
-        for (int i = 0; i < grid.Length; i++){
-            for (int j = 0; j < grid[i].Length; j++){
-                if (grid[i][j] == true && CanShootAround(grid, i, j)){
-                    if (i > 0 && grid[i - 1][j] == null) // Vérifie la case au-dessus
-                        return (j,i-1);
-                    
-                    if (i < grid.Length - 1 && grid[i + 1][j] == null) // Vérifie la case en-dessous
-                        return (j,i+1);
-
-                    if (j > 0 && grid[i][j - 1] == null) // Vérifie la case à gauche
-                        return (j-1,i);
-
-                    if (j < grid[i].Length - 1 && grid[i][j + 1] == null) // Vérifie la case à droite
-                        return (j+1,i);
-                }
-            }
-        }
-    }
-
-    int x, y;
-    int nb_max_attempts = 15;
-    for (int attempts = 0; attempts < nb_max_attempts; attempts++){
-        (int, int) a = GenerateValidIACoordinates_IA1(grid);
-        (x, y) = a;
-        if (IsNotShootAround(grid, x, y)) 
-            return a;
-    }
-    return GenerateValidIACoordinates_IA1(grid);
-    
-}
-
-bool CheckSinkBoat(bool?[][] grid, Fleet fleet)
-{
-    int totalSunkBoatSize = fleet.Boats
-        .Where(boat => !boat.IsAlive)   // Filtrer les bateaux coulés
-        .Sum(boat => boat.Size);        // Additionner la taille des bateaux coulés
-
-    int trueCountInGrid = grid.Sum(row => row.Count(cell => cell == true));
-    //Console.WriteLine($"CanShootAround totalSunkBoatSize={totalSunkBoatSize}, trueCountInGrid={trueCountInGrid}");
-    bool areAllBoatsSunk = (totalSunkBoatSize == trueCountInGrid);
-    return areAllBoatsSunk;
-}
-
-bool CanShootAround(bool?[][] grid, int j, int i)
-{
-    int nb = 0;
-    // Vérifier les limites pour éviter les accès hors des bords de la grille
-    if (i > 0 && grid[i - 1][j] == null) // Vérifie la case au-dessus
-        nb++;
-    
-    if (i < grid.Length - 1 && grid[i + 1][j] == null) // Vérifie la case en-dessous
-        nb++;
-
-    if (j > 0 && grid[i][j - 1] == null) // Vérifie la case à gauche
-        nb++;
-
-    if (j < grid[i].Length - 1 && grid[i][j + 1] == null) // Vérifie la case à droite
-        nb++;
-
-    //PrintSurroundingCells(grid,i,j);
-    // Si toutes les cases adjacentes sont null, retourner true
-    if (nb > 0){
-        return true;
-    }else{
-        return false;
-    }
-}
-
-bool IsNotShootAround(bool?[][] grid, int j, int i)
-{
-    int nb = 0;
-    int possibility = 0;
-    // Vérifier les limites pour éviter les accès hors des bords de la grille
-    if (i > 0){
-        possibility ++;
-        if(grid[i - 1][j] == null)
-            nb++;
-    }
-    if (i < grid.Length - 1){
-        possibility ++;
-        if(grid[i + 1][j] == null)
-            nb++;
-    }
-    if (j > 0){
-        possibility ++;
-        if(grid[i][j - 1] == null)
-            nb++;
-    }
-    if (j < grid[i].Length - 1){
-        possibility ++;
-        if(grid[i][j + 1] == null)
-            nb++;
-    }
-    
-    
-    
-    bool isEqual = possibility == nb ? true : false;
-    //PrintSurroundingCells(grid,i,j);
-    // Si toutes les cases adjacentes sont null, retourner true
-    if (nb > 0 && isEqual){
-        return true;
-    }else{
-        return false;
-    }
-}
-
-void PrintSurroundingCells(bool?[][] grid, int i, int j)
-{
 
 
-    string topLeft = GetGridValue(grid, i - 1, j - 1);
-    string top = GetGridValue(grid, i - 1, j);
-    string topRight = GetGridValue(grid, i - 1, j + 1);
-
-    string left = GetGridValue(grid, i, j - 1);
-    string center = GetGridValue(grid, i, j);
-    string right = GetGridValue(grid, i, j + 1);
-
-    string bottomLeft = GetGridValue(grid, i + 1, j - 1);
-    string bottom = GetGridValue(grid, i + 1, j);
-    string bottomRight = GetGridValue(grid, i + 1, j + 1);
-
-    // Affichage
-    Console.WriteLine($"|{topLeft}|{top}|{topRight}|");
-    Console.WriteLine($"|{left}|{center}|{right}|");
-    Console.WriteLine($"|{bottomLeft}|{bottom}|{bottomRight}|\n");
-}
-
-string GetGridValue(bool?[][] grid, int i, int j)
-{
-    if (i < 0 || i >= grid.Length || j < 0 || j >= grid[i].Length)
-        return " "; // Hors de la grille
-
-    return grid[i][j] == true ? "T" :
-           grid[i][j] == false ? "F" : " "; // T pour true, F pour false, X pour null
-}
 
 
 
