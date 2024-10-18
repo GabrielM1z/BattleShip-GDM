@@ -226,27 +226,26 @@ app.MapPost("/tour", async (AppDbContext dbContext, GridService gridService, Gam
             // Récupérer l'utilisateur
             var userRecup = await dbContext.Users.FirstOrDefaultAsync(u => u.Name == game.user.Name);
 
-            // Vérifie si l'utilisateur existe
             if (userRecup != null)
             {
-                // Si le nombre de coups du jeu est supérieur à celui de l'utilisateur récupéré, on met à jour
+                // Si le nombre de coups du jeu est inférieur, on met à jour le nombre de coups
                 if (game.user.NbCoup < userRecup.NbCoup)
                 {
-                    userRecup.NbCoup = game.user.NbCoup; // Met à jour l'utilisateur récupéré
+                    userRecup.NbCoup = game.user.NbCoup;
                 }
+
+                // Incrémente le nombre de victoires
+                userRecup.NbVictoire++;
+                
+                // Mise à jour de l'utilisateur existant
+                dbContext.Users.Update(userRecup);
             }
             else
             {
                 // Si l'utilisateur n'existe pas, on le crée
-                userRecup = game.user;
-                dbContext.Users.Add(userRecup);
+                game.user.NbVictoire++; // Incrémenter les victoires pour le nouveau joueur
+                dbContext.Users.Add(game.user);
             }
-
-            // Incrémente le nombre de victoires
-            userRecup.NbVictoire++;
-
-            // Enregistre ou met à jour l'utilisateur dans la base de données
-            dbContext.Users.Update(userRecup);
 
             // Sauvegarde les changements dans la base de données
             await dbContext.SaveChangesAsync();
