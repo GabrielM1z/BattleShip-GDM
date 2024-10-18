@@ -184,6 +184,10 @@
 
 	private bool EverythingIsPlaced()
 	{
+		if (GameState != null){return false;}
+		if (GameState.fleetJ1 != null){return false;}
+		if (GameState.fleetJ1.Boats != null){return false;}
+		
 		foreach (var boat in GameState.fleetJ1.Boats)
 		{
 			if(boat.X == -1 | boat.Y == -1)
@@ -193,7 +197,6 @@
 		}
 		return true;
 	}
-
 
 
 
