@@ -12,5 +12,9 @@ public class SetupRequestValidator : AbstractValidator<SetupRequest>
             .Must(value => validDifficulties.Contains(value))
             .WithMessage("Le niveau de difficulté doit être l'un des formats acceptés : 00, 01, 02, 10, 11, 12, 13, 14.");
 
+        RuleFor(x => x.User)
+            .NotEmpty()
+            .WithMessage("L'utilisateur doit être fourni.");
+
     }
 }
