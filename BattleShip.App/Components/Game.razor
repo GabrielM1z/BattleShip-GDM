@@ -242,6 +242,12 @@
 						GameState.MaskedGridJ2 = gameReponse.MaskedGridJ2;
 						GameState.start = true;
 
+						// Ajoute le message du shoot dans les logs
+						if (!string.IsNullOrEmpty(shootReponse.Message))
+						{
+							GameState.AddLog(shootReponse.Message);
+						}
+
 						// fleet maj
 						GameState.fleetJ1 = gameReponse.fleetJ1;
 						GameState.fleetJ2 = gameReponse.fleetJ2;

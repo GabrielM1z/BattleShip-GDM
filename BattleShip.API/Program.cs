@@ -65,26 +65,7 @@ app.UseCors("AllowBlazorClient");
 app.MapGet("/", () => "Hello World")
 .WithOpenApi();
 
-app.MapPost("/add-user", async (AppDbContext dbContext, [FromBody] User user) =>
-{
-    var existingUser = await dbContext.Users
-        .FirstOrDefaultAsync(u => u.Name == user.Name);
-
-    if (existingUser != null)
-    {
-        // Si l'utilisateur existe déjà, le retourner
-        return Results.Ok(existingUser);
-    }
-
-    // Si l'utilisateur n'existe pas, on l'ajoute
-    dbContext.Users.Add(user);
-    await dbContext.SaveChangesAsync();
-
-    // Retourne le nouvel utilisateur ajouté
-    return Results.Ok(user);
-});
-
-app.MapPost("/setup", (GridService gridService, Game game, GameHistory gameHistory, [FromBody] SetupRequest request, IValidator<SetupRequest> validator) =>
+app.MapPost("/setup", async (AppDbContext dbContext, GridService gridService, Game game, GameHistory gameHistory, [FromBody] SetupRequest request, IValidator<SetupRequest> validator) =>
 {
     Console.WriteLine("/setup call");
 
@@ -96,6 +77,18 @@ app.MapPost("/setup", (GridService gridService, Game game, GameHistory gameHisto
     {
         return Results.BadRequest(validationResult.Errors);
     }
+
+    User user = new User(request.User);
+    var existingUser = await dbContext.Users
+        .FirstOrDefaultAsync(u => u.Name == user.Name);
+
+    if (existingUser == null)
+    {
+        
+        // Si l'utilisateur n'existe pas, on l'ajoute
+        dbContext.Users.Add(user);
+    }
+    await dbContext.SaveChangesAsync();
 
     var gameId = Guid.NewGuid();
 
@@ -150,6 +143,7 @@ app.MapPost("/setup", (GridService gridService, Game game, GameHistory gameHisto
     game.MaskedGridJ2 = maskedJ2;
     game.GameMode = aiLevel;
     game.fleetJ1 = new Fleet(true);
+    game.fleetJ2 = new Fleet(true);
 
     gameHistory = new GameHistory();
 
