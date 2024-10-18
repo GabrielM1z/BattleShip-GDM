@@ -4,5 +4,7 @@ namespace BattleShip.Models
     {
         public string LevelDifficulty { get; set; }
 
+        public string user {get; set;}
+
     }
 }
