@@ -1,6 +1,6 @@
 namespace BattleShip.Models
 {
-    public class LevelRequest
+    public class SetupRequest
     {
         public string LevelDifficulty { get; set; }
 

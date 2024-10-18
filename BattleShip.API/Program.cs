@@ -33,7 +33,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddSingleton<GridService>();
 builder.Services.AddSingleton<Game>();
 builder.Services.AddSingleton<GameHistory>();
-builder.Services.AddScoped<IValidator<LevelRequest>, LevelRequestValidator>();
+builder.Services.AddScoped<IValidator<SetupRequest>, SetupRequestValidator>();
 builder.Services.AddScoped<IValidator<PlaceRequest>, PlaceRequestValidator>();
 builder.Services.AddScoped<IValidator<Boat>, BoatValidator>();
 builder.Services.AddScoped<IValidator<ShootRequest>, ShootRequestValidator>();
@@ -84,7 +84,7 @@ app.MapPost("/add-user", async (AppDbContext dbContext, [FromBody] User user) =>
     return Results.Ok(user);
 });
 
-app.MapPost("/setup", (GridService gridService, Game game, GameHistory gameHistory, [FromBody] LevelRequest request, IValidator<LevelRequest> validator) =>
+app.MapPost("/setup", (GridService gridService, Game game, GameHistory gameHistory, [FromBody] SetupRequest request, IValidator<SetupRequest> validator) =>
 {
     Console.WriteLine("/setup call");
 

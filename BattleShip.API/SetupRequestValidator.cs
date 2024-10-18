@@ -1,9 +1,9 @@
 using BattleShip.Models;
 using FluentValidation;
 
-public class LevelRequestValidator : AbstractValidator<LevelRequest>
+public class SetupRequestValidator : AbstractValidator<SetupRequest>
 {
-    public LevelRequestValidator()
+    public SetupRequestValidator()
     {
         string[] validDifficulties = { "00", "01", "02", "10", "11", "12", "13", "14" };
 
