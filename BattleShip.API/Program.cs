@@ -302,13 +302,16 @@ app.MapGet("/leaderBoard", async (AppDbContext dbContext) =>
     // Récupérer tous les utilisateurs
     var users = await dbContext.Users.ToListAsync();
 
-    // Créer les dictionnaires pour le classement
-    var coupCountMap = users.ToDictionary(u => u.Name, u => u.NbCoup);
-    var victoryCountMap = users.ToDictionary(u => u.Name, u => u.NbVictoire);
+    // Créer et trier les listes pour le classement
+    var sortedCoupCount = users
+        .OrderBy(u => u.NbCoup)
+        .Select(u => new KeyValuePair<string, int>(u.Name, u.NbCoup))
+        .ToList();
 
-    // Trier les dictionnaires par ordre croissant
-    var sortedCoupCount = coupCountMap.OrderBy(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
-    var sortedVictoryCount = victoryCountMap.OrderBy(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
+    var sortedVictoryCount = users
+        .OrderByDescending(u => u.NbVictoire)
+        .Select(u => new KeyValuePair<string, int>(u.Name, u.NbVictoire))
+        .ToList();
 
     // Créer l'objet de réponse
     var response = new LeaderBoardResult
