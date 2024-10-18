@@ -8,3 +8,6 @@ BattleShip.Models/obj/
 
 *.dll
 *.exe
+BattleShip.API/users.db
+BattleShip.API/users.db-shm
+BattleShip.API/users.db-wal

@@ -163,14 +163,14 @@ app.MapPost("/start", (GridService gridService, Game game, GameHistory gameHisto
     Console.WriteLine("/start call");
 
     
-    // Valider la requête
-    var validationResult = validator.Validate(request);
+    // // Valider la requête
+    // var validationResult = validator.Validate(request);
 
-    // Si la validation échoue, renvoyer une erreur
-    if (!validationResult.IsValid)
-    {
-        return Results.BadRequest(validationResult.Errors);
-    }
+    // // Si la validation échoue, renvoyer une erreur
+    // if (!validationResult.IsValid)
+    // {
+    //     return Results.BadRequest(validationResult.Errors);
+    // }
     
     
 
@@ -186,7 +186,7 @@ app.MapPost("/start", (GridService gridService, Game game, GameHistory gameHisto
         }
     }
 
-    Fleet boatsJ2 = new Fleet(true);
+    Fleet boatsJ2 = new Fleet(true); 
 
     gridService.PlaceBoat(game.GridJ1, boatsJ1.GetBoats());
     gridService.PlaceBoat(game.GridJ2, boatsJ2.GetBoats());
@@ -251,6 +251,7 @@ app.MapPost("/tour", (GridService gridService, Game game, GameHistory gameHistor
     game.PrintGame();
     
     gameHistory.SaveState(game);
+    //game.SetGame(gameHistory.GetCurrentState());
 
     return Results.Ok(gameresult);
 })
@@ -283,6 +284,8 @@ app.MapGet("/history", (GameHistory gameHistory) =>
         historyInfo.Add($"PVE: {state.PVE}");
         historyInfo.Add($"Grille J1: {string.Join("\n", state.GridJ1.Select(row => string.Join(' ', row)))}");
         historyInfo.Add($"Grille J2: {string.Join("\n", state.GridJ2.Select(row => string.Join(' ', row)))}");
+        historyInfo.Add($"Grille J1: {string.Join("\n", state.MaskedGridJ1.Select(row => string.Join(' ', row)))}");
+        historyInfo.Add($"Grille J2: {string.Join("\n", state.MaskedGridJ2.Select(row => string.Join(' ', row)))}");
         historyInfo.Add(""); // Ajout d'une séparation entre les états
         index++;
     }
@@ -299,6 +302,7 @@ app.MapGet("/undo", (GridService gridService, Game game, GameHistory gameHistory
     {
         game.SetGame(previousState);
     }
+    game.PrintGame();
     return Results.Ok(game);
 })
 .WithOpenApi();
@@ -414,7 +418,6 @@ bool CheckSinkBoat(bool?[][] grid, Fleet fleet)
     bool areAllBoatsSunk = (totalSunkBoatSize == trueCountInGrid);
     return areAllBoatsSunk;
 }
-
 
 bool CanShootAround(bool?[][] grid, int j, int i)
 {
