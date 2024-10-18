@@ -150,7 +150,7 @@ app.MapPost("/start", (GridService gridService, Game game, GameHistory gameHisto
 {
     Console.WriteLine("/start call");
 
-    /*
+    
     // Valider la requête
     var validationResult = validator.Validate(request);
 
@@ -159,7 +159,7 @@ app.MapPost("/start", (GridService gridService, Game game, GameHistory gameHisto
     {
         return Results.BadRequest(validationResult.Errors);
     }
-    */
+    
     
 
     Fleet boatsJ1 = new Fleet(true);
