@@ -5,16 +5,25 @@
 @inject HttpClient Http
 
 <div class="logs">
-    <button class="btn btn-primary" @onclick="() => Undo()">
-        Undo
-    </button>
+    <div align="center">
+        <button class="btn btn-primary" @onclick="() => Undo(GameState)">
+            Undo
+        </button>
+    </div>
+    <div class="logText">
+        @foreach (var log in GameState.Logs)
+        {
+            <div>@log</div>
+        }
+    </div>
 </div>
 
 
 @code {
 
-    private async Task Undo()
+    private async Task Undo(GameState GameState)
     {
+        GameState.Logs.RemoveAt(GameState.Logs.Count - 1);
 		// on envoie
 		var response = await Http.GetAsync("/undo");
 
@@ -68,5 +77,15 @@
         {
             Console.WriteLine("Erreur lors de l'appel API : " + response.StatusCode);
 		}
+    }
+
+    protected override void OnInitialized()
+    {
+        GameState.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        GameState.OnChange -= StateHasChanged;
     }
 }

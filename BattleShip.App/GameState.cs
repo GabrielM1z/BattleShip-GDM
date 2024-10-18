@@ -26,6 +26,7 @@ public class GameState
 
     // placement des bateaux
     public bool placeBoat;
+    public List<string> Logs { get; set; } = new List<string>();
 
     // Initialisation des grilles
     public GameState(int size)
@@ -54,5 +55,10 @@ public class GameState
     public void NotifyStateChanged()
     {
         OnChange?.Invoke();
+    }
+    public void AddLog(string message)
+    {
+        Logs.Add(message);
+        NotifyStateChanged();
     }
 }
