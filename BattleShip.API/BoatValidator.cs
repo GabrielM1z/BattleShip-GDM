@@ -30,13 +30,13 @@ public class BoatValidator : AbstractValidator<Boat>
         When(b => b.Horizontal, () =>
         {
             RuleFor(b => b.X)
-                .LessThan(b => gridSize - b.Size) // Correction ici : utilisation de < au lieu de <=
+                .LessThanOrEqualTo(b => gridSize - b.Size) // Correction ici : utilisation de < au lieu de <=
                 .WithMessage($"Le bateau dépasse les limites horizontales de la grille.");
         })
         .Otherwise(() =>
         {
             RuleFor(b => b.Y)
-                .LessThan(b => gridSize - b.Size) // Correction ici : utilisation de < au lieu de <=
+                .LessThanOrEqualTo(b => gridSize - b.Size) // Correction ici : utilisation de < au lieu de <=
                 .WithMessage($"Le bateau dépasse les limites verticales de la grille.");
         });
     }
