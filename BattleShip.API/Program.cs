@@ -151,14 +151,14 @@ app.MapPost("/start", (GridService gridService, Game game, GameHistory gameHisto
     Console.WriteLine("/start call");
 
     
-    // Valider la requête
-    var validationResult = validator.Validate(request);
+    // // Valider la requête
+    // var validationResult = validator.Validate(request);
 
-    // Si la validation échoue, renvoyer une erreur
-    if (!validationResult.IsValid)
-    {
-        return Results.BadRequest(validationResult.Errors);
-    }
+    // // Si la validation échoue, renvoyer une erreur
+    // if (!validationResult.IsValid)
+    // {
+    //     return Results.BadRequest(validationResult.Errors);
+    // }
     
     
 
