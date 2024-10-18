@@ -10,6 +10,9 @@
 		{
 			@foreach (var boat in GameState.fleetJ1.Boats)
 			{
+				<div class="boat">
+
+				</div>
 				<p class="@(boat.IsAlive ? "alive" : "sunk")">
 					@boat.Name - @boat.Size
 				</p>

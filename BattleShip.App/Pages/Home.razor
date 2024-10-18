@@ -67,22 +67,23 @@ else
 	}
 
 	private async Task HandleStartGame(Fleet fleetPlaced){await StartGame(fleetPlaced);}
-	private async Task HandleSetUp(string level){await SetUp(level);}
+	private async Task HandleSetUp((string lvl, string user) parameters){await SetUp(parameters.lvl, parameters.user);}
 
 
-	private async Task SetUp(string lvl)
+	private async Task SetUp(string lvl, string user)
 	{
 		// mettre en mode placeBoat
 		GameState.placeBoat = true;
 		GameState.NotifyStateChanged();
 
-		var levelRequest = new BattleShip.Models.LevelRequest
+		var setUpRequest = new BattleShip.Models.SetupRequest
 		{
 			LevelDifficulty = lvl,
+			User = user
 		};
 
 		// on serialize en JSON
-		var jsonSend = System.Text.Json.JsonSerializer.Serialize(levelRequest);
+		var jsonSend = System.Text.Json.JsonSerializer.Serialize(setUpRequest);
 		var content = new StringContent(jsonSend, Encoding.UTF8, "application/json");
 
 		// on envoie
