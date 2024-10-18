@@ -237,7 +237,7 @@ div.selection-level {
     align-content: baseline;
     width: 300px;
     margin: auto;
-    margin-top: 50px;
+    margin-top: 20px;
     background-color: #00305e;
     padding: 10px;
     border: #9ff2fd solid 2px;
@@ -280,6 +280,25 @@ div.sub-selection>div.btn-selection {
 div.sub-selection>div.btn-selection>button {
     width: 90%;
     margin: 5px 0;
+}
+
+div.input-name{
+    width: 200px;
+    margin: auto;
+}
+
+div.welcome-text {
+    width: fit-content;
+    display: flex;
+    margin: auto;
+    margin-top: 20px;
+    flex-direction: column;
+    align-items: center;
+}
+
+div.welcome-text span {
+    color: #ffffff;
+    font-weight: bold;
 }
 
 

@@ -1,5 +1,14 @@
 @inject GameState GameState
 
+<div class="input-name">
+	<input @oninput="(e) => Name = e.Value.ToString()" placeholder="Entrez votre nom" class="form-control" />
+</div>
+
+<div class="welcome-text">
+	<span> Bienvenue </span>
+	<span>- @Name -</span>
+</div>
+
 @* Selection des niveaux *@
 <div class="selection-level">
 
@@ -30,20 +39,22 @@
 
 
 @code {
-
-			private string level1 = "11";
-			private string level2 = "12";
-			private string level3 = "13";
-			private string level4 = "14";
+	private string Name { get; set; } = string.Empty;
+	private string level1 = "11";
+	private string level2 = "12";
+	private string level3 = "13";
+	private string level4 = "14";
 
     [Parameter]
-    public EventCallback<string> OnCallParentMethod { get; set; }
+    public EventCallback<(string, string)> OnCallParentMethod { get; set; }
 
-    private async Task OnButtonClicked(string param)
+    private async Task OnButtonClicked(string lvl)
     {
-        if (OnCallParentMethod.HasDelegate)
+		var parameters = (lvl, Name);
+		Console.WriteLine(Name);
+        if (OnCallParentMethod.HasDelegate & Name != null & Name != "")
         {
-            await OnCallParentMethod.InvokeAsync(param);
+            await OnCallParentMethod.InvokeAsync(parameters);
         }
     }
 }

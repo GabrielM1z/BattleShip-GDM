@@ -33,7 +33,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddSingleton<GridService>();
 builder.Services.AddSingleton<Game>();
 builder.Services.AddSingleton<GameHistory>();
-builder.Services.AddScoped<IValidator<LevelRequest>, LevelRequestValidator>();
+builder.Services.AddScoped<IValidator<SetupRequest>, SetupRequestValidator>();
 builder.Services.AddScoped<IValidator<PlaceRequest>, PlaceRequestValidator>();
 builder.Services.AddScoped<IValidator<Boat>, BoatValidator>();
 builder.Services.AddScoped<IValidator<ShootRequest>, ShootRequestValidator>();
@@ -67,12 +67,24 @@ app.MapGet("/", () => "Hello World")
 
 app.MapPost("/add-user", async (AppDbContext dbContext, [FromBody] User user) =>
 {
+    var existingUser = await dbContext.Users
+        .FirstOrDefaultAsync(u => u.Name == user.Name);
+
+    if (existingUser != null)
+    {
+        // Si l'utilisateur existe déjà, le retourner
+        return Results.Ok(existingUser);
+    }
+
+    // Si l'utilisateur n'existe pas, on l'ajoute
     dbContext.Users.Add(user);
     await dbContext.SaveChangesAsync();
+
+    // Retourne le nouvel utilisateur ajouté
     return Results.Ok(user);
 });
 
-app.MapPost("/setup", (GridService gridService, Game game, GameHistory gameHistory, [FromBody] LevelRequest request, IValidator<LevelRequest> validator) =>
+app.MapPost("/setup", (GridService gridService, Game game, GameHistory gameHistory, [FromBody] SetupRequest request, IValidator<SetupRequest> validator) =>
 {
     Console.WriteLine("/setup call");
 
@@ -151,16 +163,14 @@ app.MapPost("/start", (GridService gridService, Game game, GameHistory gameHisto
     Console.WriteLine("/start call");
 
     
-    // // Valider la requête
-    // var validationResult = validator.Validate(request);
+    // Valider la requête
+    var validationResult = validator.Validate(request);
 
-    // // Si la validation échoue, renvoyer une erreur
-    // if (!validationResult.IsValid)
-    // {
-    //     return Results.BadRequest(validationResult.Errors);
-    // }
-    
-    
+    // Si la validation échoue, renvoyer une erreur
+    if (!validationResult.IsValid)
+    {
+        return Results.BadRequest(validationResult.Errors);
+    }
 
     Fleet boatsJ1 = new Fleet(true);
     if (request.Boats != null)
