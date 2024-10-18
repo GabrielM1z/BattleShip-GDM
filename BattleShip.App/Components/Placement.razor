@@ -87,15 +87,10 @@
 
 	private async Task OnButtonClicked(Models.Fleet placedBoat)
 	{
-		if (OnCallStart.HasDelegate)
+		if (OnCallStart.HasDelegate & EverythingIsPlaced())
 		{
 			await OnCallStart.InvokeAsync(placedBoat);
 		}
-	}
-
-	private async Task Strt(Models.Fleet placedBoat)
-	{
-		Console.WriteLine(placedBoat.Boats[1].Id);
 	}
 
 
@@ -113,7 +108,6 @@
 		{
 			if(CanBePlaced(row, col, boatSelected.Size, isHorizontal))
 			{
-				Console.WriteLine(CanBePlaced(row, col, boatSelected.Size, isHorizontal));
 				for (int i = 0; i < boatSelected.Size; i++)
 				{
 					if(isHorizontal)
@@ -136,14 +130,14 @@
 
 	private void DeleteBoat(Boat boat)
 	{
-		for (int i = 0; i < boat.Size; i++)
+		for (int x = 0; x < GameState.GridJ1.Length; x++)
 		{
-			if(boat.Horizontal)
+			for (int y = 0; y < GameState.GridJ1[x].Length; y++)
 			{
-				GameState.GridJ1[boat.X][boat.Y+i] = '\u0000';
-			}
-			else {
-				GameState.GridJ1[boat.X+i][boat.Y] = '\u0000';
+				if (GameState.GridJ1[x][y] == boat.Symbol)
+				{
+					GameState.GridJ1[x][y] = '\u0000';
+				}
 			}
 		}
 		boat.X = -1;
@@ -153,11 +147,11 @@
 
 	private bool IsPlaced(char symbol)
 	{
-		for (int row = 0; row < GameState.GridJ1.Length; row++)
+		for (int x = 0; x < GameState.GridJ1.Length; x++)
 		{
-			for (int col = 0; col < GameState.GridJ1[row].Length; col++)
+			for (int y = 0; y < GameState.GridJ1[x].Length; y++)
 			{
-				if (GameState.GridJ1[row][col] == symbol)
+				if (GameState.GridJ1[x][y] == symbol)
 				{
 					return true; 
 				}
@@ -173,9 +167,33 @@
 			if(col+size > GameState.GridJ1.Length | col < 0) {
 				return false;
 			}
+			for(int i = 0; i < size; i++) {
+				if (GameState.GridJ1[row][col+i] != '\u0000') {
+					return false;
+				}
+			}
 		}
 		else {
 			if(row+size > GameState.GridJ1.Length | row < 0) {
+				return false;
+			}
+			for(int i = 0; i < size; i++) {
+				if (GameState.GridJ1[row+i][col] != '\u0000') {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+
+	private bool EverythingIsPlaced()
+	{
+
+		foreach (var boat in GameState.fleetJ1.Boats)
+		{
+			if(boat.X == -1 | boat.Y == -1)
+			{
 				return false;
 			}
 		}
