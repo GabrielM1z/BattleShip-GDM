@@ -215,12 +215,13 @@ app.MapPost("/tour", async (AppDbContext dbContext, GridService gridService, Gam
     bool isHit = result.shootResultJ1.IsHit;
     bool isGameFinished = result.game.IsGameFinished;
 
-    if (canShoot && !isGameFinished)
+    if (canShoot)
     {
         game.user.NbCoup++;
     }
-    else
-    {
+    
+
+    if(!canShoot || isGameFinished) {
         if (isGameFinished)
         {
             game.user.NbCoup++;
