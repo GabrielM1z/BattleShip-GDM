@@ -297,7 +297,7 @@ app.MapGet("/undo", (GridService gridService, Game game, GameHistory gameHistory
 })
 .WithOpenApi();
 
-app.MapGet("/getLeaderBoard", async (AppDbContext dbContext) =>
+app.MapGet("/leaderBoard", async (AppDbContext dbContext) =>
 {
     // Récupérer tous les utilisateurs
     var users = await dbContext.Users.ToListAsync();
