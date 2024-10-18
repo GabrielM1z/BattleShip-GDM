@@ -23,9 +23,9 @@
 {
 	@if(GameState.start == true)
 	{
-		// btn pour retour Menu
+		// btn pour reset la partie
 		<div class="start">
-			<button class="btn btn-primary" @onclick="Menu">Menu</button>
+			<button class="btn btn-primary" @onclick="Reset">Reset</button>
 		</div>
 
 		// Jeu
@@ -115,6 +115,12 @@ else
 				{
 					GameState.fleetJ1 = gameResponse.fleetJ1;
 					GameState.GridJ1 = gameResponse.GridJ1;
+					GameState.MaskedGridJ1 = gameResponse.MaskedGridJ1;
+					GameState.MaskedGridJ2 = gameResponse.MaskedGridJ2;
+					GameState.end = gameResponse.IsGameFinished;
+					GameState.fleetJ1 = gameResponse.fleetJ1;
+					GameState.fleetJ2 = gameResponse.fleetJ2;
+
 					Console.WriteLine(gameResponse.GridJ1);
 				}
 			}
@@ -181,4 +187,21 @@ else
             Console.WriteLine("Erreur lors de l'appel API : " + response.StatusCode);
         }
     }
+
+
+	private async Task Reset()
+	{
+		if(GameState != null)
+		{
+			GameState.GridJ1 = null;
+			GameState.MaskedGridJ1 = null;
+			GameState.MaskedGridJ2 = null;
+			GameState.start = false;
+			GameState.end = false;
+			GameState.fleetJ1 = null;
+			GameState.fleetJ2 = null;
+			GameState.level = null;
+			GameState.placeBoat = false;
+		}
+	}
 }

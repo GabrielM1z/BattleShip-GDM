@@ -30,6 +30,7 @@ namespace BattleShip.API.Service
         {
             foreach (var boat in boats)
             {
+                Console.WriteLine($"PlaceBoat {boat.Id}= ({boat.X},{boat.Y})");
                 bool placed = false;
 
                 // Vérifie si les coordonnées sont spécifiées

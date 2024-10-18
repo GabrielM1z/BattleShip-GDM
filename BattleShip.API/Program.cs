@@ -150,8 +150,7 @@ app.MapPost("/start", (GridService gridService, Game game, GameHistory gameHisto
 {
     Console.WriteLine("/start call");
 
-    //coucou damien ❤️
-    /*
+    
     // Valider la requête
     var validationResult = validator.Validate(request);
 
@@ -160,19 +159,27 @@ app.MapPost("/start", (GridService gridService, Game game, GameHistory gameHisto
     {
         return Results.BadRequest(validationResult.Errors);
     }
-    */
+    
+    
 
     Fleet boatsJ1 = new Fleet(true);
-    if(request.Boats.Count > 0){
-        boatsJ1.Boats = request.Boats;
+    if (request.Boats != null)
+    {
+        Console.WriteLine($"request.Boats != null");
+        foreach (Boat boat in request.Boats)
+        {
+            Console.WriteLine($"Boat boat in request.Boats");
+            boatsJ1.SetBoatPosition(boat.Id,boat.X,boat.Y,boat.Horizontal);
+            Console.WriteLine("Ajout");
+        }
     }
+
     Fleet boatsJ2 = new Fleet(true);
 
     gridService.PlaceBoat(game.GridJ1, boatsJ1.GetBoats());
     gridService.PlaceBoat(game.GridJ2, boatsJ2.GetBoats());
 
 
-    
     game.fleetJ1 = boatsJ1;
     game.fleetJ2 = boatsJ2;
 
@@ -229,7 +236,7 @@ app.MapPost("/tour", (GridService gridService, Game game, GameHistory gameHistor
     result = okResultJ.Value;
     gameresult.game = result.game;
     gameresult.shootResultJ2 = result.shootResultJ2;
-    //game.PrintGame();
+    game.PrintGame();
     
     gameHistory.SaveState(game);
 
