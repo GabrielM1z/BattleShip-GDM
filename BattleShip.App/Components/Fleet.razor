@@ -1,37 +1,52 @@
 @inject GameState GameState  // Injecte le singleton GameState
 
 <div class="fleet">
+
+	<div class="sub-fleet">
+		<p>Opponent fleet</p>
+		
+		@if(GameState.fleetJ2 != null)
+		{
+			@foreach (var boat in GameState.fleetJ2.Boats)
+			{
+				<div class="boat-fleet">
+					<p class="@(boat.IsAlive ? "alive" : "sunk")">
+						@boat.Name - @boat.Size - @(boat.IsAlive ? "Vivant" : "Coulé")
+					</p>
+				</div>
+			}
+		}
+		
+	</div>
+
+	<div class="sub-fleet">
+		<p>Our fleet</p>
+
+		@if(GameState.fleetJ1 != null)
+		{
+			@foreach (var boat in GameState.fleetJ1.Boats)
+			{
+				<div class="boat-fleet">
+					<p class="@(boat.IsAlive ? "alive" : "sunk")">
+						@boat.Name - @boat.Size - @(boat.IsAlive ? "Vivant" : "Coulé")
+					</p>
+				</div>
+			}
+		}
+	</div>
     
-    @if(GameState.fleetJ1 != null)
-    {
-        <p>Opponent fleet</p>
-        @foreach (var boat in GameState.fleetJ2.Boats)
-        {
-            <p class="@(boat.IsAlive ? "alive" : "sunk")">
-                @boat.Name - @boat.Size - @(boat.IsAlive ? "Vivant" : "Coulé")
-            </p>
-        }
-        <br>
-        <p>Our fleet</p>
-        @foreach (var boat in GameState.fleetJ1.Boats)
-        {
-            <p class="@(boat.IsAlive ? "alive" : "sunk")">
-                @boat.Name - @boat.Size - @(boat.IsAlive ? "Vivant" : "Coulé")
-            </p>
-        }
-    }
 </div>
 
 @code {
-    protected override void OnInitialized()
-    {
-        // Abonne le composant aux changements du GameState
-        GameState.OnChange += StateHasChanged;
-    }
+	protected override void OnInitialized()
+	{
+		// Abonne le composant aux changements du GameState
+		GameState.OnChange += StateHasChanged;
+	}
 
-    public void Dispose()
-    {
-        // Désabonne lorsque le composant est détruit pour éviter les fuites de mémoire
-        GameState.OnChange -= StateHasChanged;
-    }
+	public void Dispose()
+	{
+		// Désabonne lorsque le composant est détruit pour éviter les fuites de mémoire
+		GameState.OnChange -= StateHasChanged;
+	}
 }

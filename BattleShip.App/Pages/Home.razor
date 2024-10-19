@@ -189,11 +189,12 @@ else
 			GameState.MaskedGridJ2 = null;
 			GameState.start = false;
 			GameState.end = false;
-			GameState.fleetJ1 = null;
-			GameState.fleetJ2 = null;
+			GameState.fleetJ1 = new Models.Fleet();
+			GameState.fleetJ2 = new Models.Fleet();
 			GameState.level = null;
 			GameState.placeBoat = false;
 			GameState.Logs = [];
+			GameState.NotifyStateChanged();
 		}
 	}
 }
