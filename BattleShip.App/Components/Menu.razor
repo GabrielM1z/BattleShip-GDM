@@ -1,4 +1,5 @@
 @inject GameState GameState
+@inject HttpClient Http
 
 <div class="input-name">
 	<input @oninput="(e) => Name = e.Value.ToString()" placeholder="Entrez votre nom" class="form-control" />
@@ -14,7 +15,7 @@
 
 	<div class="sub-selection">
 		<div class="title-selection">
-			<p>PvE</p>
+			<p>🙋‍♂️ PvE 🤖</p>
 		</div>
 		<div class="btn-selection">
 			<button class="btn btn-outline-info" @onclick="() => OnButtonClicked(level0)">Level 0 (8x8)</button>
@@ -27,25 +28,84 @@
 
 	<div class="sub-selection">
 		<div class="title-selection">
-			<p>PvP</p>
+			<p>🙋‍♂️ PvP 🙋‍♂️</p>
 		</div>
 		<div class="btn-selection">
-			<button class="btn btn-outline-info">Petite Grille (8x8)</button>
+			<button class="btn btn-outline-info" @onclick="() => OnButtonClicked(level5)">Petite Grille (8x8)</button>
 			<button class="btn btn-outline-info">Moyenne Grille (10x10)</button>
 			<button class="btn btn-outline-info">Grosse Grille (12x12)</button>
 		</div>
 	</div>
 </div>
+<div class="leaderboard-container">
+    <h2>🏆 Leader Board 🏆</h2>
+
+    @if (leaderBoardResult != null)
+    {
+        <div class="leaderboard">
+            <!-- Coup Count Section -->
+            <div class="leaderboard-section">
+                <h3>Top 3: Coup Count</h3>
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Coup Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var coup in leaderBoardResult.UserCoupCount.Take(3))
+						{
+							<tr>
+								<td>@coup.Key</td>
+								<td>@coup.Value</td>
+							</tr>
+						}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Victory Count Section -->
+            <div class="leaderboard-section">
+                <h3>Top 3: Victory Count</h3>
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Victory Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var victory in leaderBoardResult.UserVictoryCount.Take(3))
+                        {
+                            <tr>
+                                <td>@victory.Key</td>
+                                <td>@victory.Value</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else
+    {
+        <p>Loading Leader Board...</p>
+    }
+</div>
+
 
 
 
 @code {
+	private LeaderBoardResult leaderBoardResult;
 	private string Name { get; set; } = string.Empty;
 	private string level0 = "10";
 	private string level1 = "11";
 	private string level2 = "12";
 	private string level3 = "13";
 	private string level4 = "14";
+	private string level5 = "00";
 
     [Parameter]
     public EventCallback<(string, string)> OnCallParentMethod { get; set; }
@@ -57,6 +117,48 @@
         if (OnCallParentMethod.HasDelegate & Name != null & Name != "")
         {
             await OnCallParentMethod.InvokeAsync(parameters);
+        }
+    }
+	protected override async Task OnInitializedAsync()
+    {
+        GameState.OnChange += StateHasChanged;
+        await LoadLeaderBoard(); // Charger le leaderboard dès l'initialisation du composant
+    }
+
+    public void Dispose()
+    {
+        GameState.OnChange -= StateHasChanged;
+    }
+	// Méthode pour récupérer les données du leaderboard depuis l'API
+    private async Task LoadLeaderBoard()
+    {
+        try
+        {
+            var response = await Http.GetAsync("/leaderBoard");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+
+                if (!string.IsNullOrEmpty(json))
+                {
+                    var options = new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    };
+
+                    leaderBoardResult = System.Text.Json.JsonSerializer.Deserialize<LeaderBoardResult>(json, options);
+                    StateHasChanged(); // Pour mettre à jour l'interface après le chargement
+                }
+            }
+            else
+            {
+                Console.WriteLine("Erreur lors de l'appel API : " + response.StatusCode);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Erreur : " + ex.Message);
         }
     }
 }

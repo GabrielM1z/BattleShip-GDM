@@ -110,6 +110,76 @@ div.start{
     width: fit-content;
 }
 
+/* leaderboard */
+.leaderboard-container {
+    width: 600px;
+    margin: 0 auto;
+    margin-top: 20px;
+    padding: 15px;
+    border: #9ff2fd solid 2px;
+    background-color: #00305e;
+    border-radius: 10px;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.leaderboard-container h2 {
+    font-family: 'Arial', sans-serif;
+    color: #AAEEFF;
+    margin-bottom: 10px;
+}
+
+.leaderboard {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+}
+
+.leaderboard-section {
+    width: 45%;
+}
+
+.leaderboard-section h3 {
+    font-family: 'Arial', sans-serif;
+    color: #AAEEFF;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.leaderboard-table th, 
+.leaderboard-table td {
+    padding: 5px;
+    border: 1px solid #ddd;
+    text-align: center;
+    font-family: 'Arial', sans-serif;
+}
+
+.leaderboard-table th {
+    background-color: #1b6ec2;
+    color: white;
+    font-weight: bold;
+}
+
+.leaderboard-table td {
+    background-color: #f2f2f2;
+}
+
+.leaderboard-table tr:nth-child(even) {
+    background-color: #e0e0e0;
+}
+
+.leaderboard-table tr:hover {
+    background-color: #ddd;
+}
+
+
+
+
 /* Grid */
 div.sub-title{
     text-align: center;
@@ -396,3 +466,55 @@ div.placement-title h3 {
 }
 
 
+/* Coming Soon*/
+.coming-soon-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.text-content h1 {
+    font-size: 4rem;
+    color: #9ff2fd;
+    margin-bottom: 0.5rem;
+}
+
+.text-content p {
+    font-size: 1.5rem;
+    color: #9ff2fd;
+    margin-bottom: 2rem;
+}
+
+.animation-content img {
+    width: auto;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-30px);
+    }
+    60% {
+        transform: translateY(-15px);
+    }
+}
+
+.mute-button {
+    background-color: #e63946;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin-top: 20px;
+    border-radius: 5px;
+}
+
+.mute-button:hover {
+    background-color: #b80000;
+}

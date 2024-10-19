@@ -41,9 +41,18 @@
 		<div class="start">
 			<button class="btn btn-primary btn-lg" @onclick="Menu">Menu</button>
 		</div>
+		Console.WriteLine($"coucou {GameState.pve}");
 
-		// placement des bateaux
+		if(GameState.pve){
+			// placement des bateaux
 		<BattleShip.App.Components.Placement OnCallStart="HandleStartGame"></BattleShip.App.Components.Placement>
+		}else{
+			// placement des bateaux
+			<BattleShip.App.Components.ComingSoon></BattleShip.App.Components.ComingSoon>
+		}
+
+
+		
 	}
 	else{
 		<BattleShip.App.Components.Menu OnCallParentMethod="HandleSetUp"></BattleShip.App.Components.Menu>
@@ -75,6 +84,9 @@ else
 		// mettre en mode placeBoat
 		GameState.placeBoat = true;
 		GameState.NotifyStateChanged();
+
+		//is pve ?
+		GameState.pve = lvl[0]=='1' ? true : false;
 
 		var setUpRequest = new BattleShip.Models.SetupRequest
 		{

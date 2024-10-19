@@ -1,0 +1,45 @@
+@page "/coming-soon"
+
+<div class="coming-soon-container">
+    <div class="text-content">
+        <h1>Coming Soon!</h1>
+        <p>Our game is launching soon! Stay tuned.</p>
+    </div>
+
+    <div class="animation-content">
+        <!-- Replace with any Angry Birds image or custom animation -->
+        <img src="img/angry-birds-logo.jpg" alt="Angry Birds" class="angry-birds-img"/>
+    </div>
+
+    <audio id="background-music" autoplay loop>
+        <source src="audio/angry-birds-theme.mp3" type="audio/mpeg" />
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- Mute Button -->
+    <button class="mute-button" @onclick="ToggleMute">
+        @if (isMuted)
+        {
+            <span>🔇 Unmute</span>
+        }
+        else
+        {
+            <span>🔊 Mute</span>
+        }
+    </button>
+</div>
+
+
+@code {
+    private bool isMuted = false;
+
+    // Inject JS runtime
+    [Inject]
+    private IJSRuntime JS { get; set; }
+
+    private async Task ToggleMute()
+    {
+        isMuted = !isMuted;
+        await JS.InvokeVoidAsync("eval", $"document.getElementById('background-music').muted = {isMuted.ToString().ToLower()};");
+    }
+}

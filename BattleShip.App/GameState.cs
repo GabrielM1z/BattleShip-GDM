@@ -23,6 +23,7 @@ public class GameState
 
     // niveau de jeu
     public string level;
+    public bool pve;
 
     // placement des bateaux
     public bool placeBoat;
