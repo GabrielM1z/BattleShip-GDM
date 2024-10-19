@@ -467,6 +467,16 @@ div.placement-title h3 {
     color: #9ff2fd;
 }
 
+div.btn-grid-container{
+    display: flex;
+    justify-content: space-around;
+    flex-direction: row;
+    width: 100%;
+}
+
+
+
+
 
 /* Coming Soon*/
 .coming-soon-container {
