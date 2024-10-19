@@ -38,7 +38,7 @@ builder.Services.AddScoped<IValidator<SetupRequest>, SetupRequestValidator>();
 builder.Services.AddScoped<IValidator<PlaceRequest>, PlaceRequestValidator>();
 builder.Services.AddScoped<IValidator<Boat>, BoatValidator>();
 builder.Services.AddScoped<IValidator<ShootRequest>, ShootRequestValidator>();
-
+builder.Services.AddScoped<IValidator<UpdateUserRequest>, UpdateUserRequestValidator>();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -66,7 +66,7 @@ app.UseCors("AllowBlazorClient");
 app.MapGet("/", () => "Hello World")
 .WithOpenApi();
 
-app.MapPost("/setup", async (AppDbContext dbContext, GridService gridService, Game game, GameHistory gameHistory, [FromBody] SetupRequest request, IValidator<SetupRequest> validator) =>
+app.MapPost("/setup", (GridService gridService, Game game, GameHistory gameHistory, [FromBody] SetupRequest request, IValidator<SetupRequest> validator) =>
 {
     Console.WriteLine("/setup call");
 
@@ -80,16 +80,6 @@ app.MapPost("/setup", async (AppDbContext dbContext, GridService gridService, Ga
     }
 
     User user = new User(request.User);
-    var existingUser = await dbContext.Users
-        .FirstOrDefaultAsync(u => u.Name == user.Name);
-
-    if (existingUser == null)
-    {
-        
-        // Si l'utilisateur n'existe pas, on l'ajoute
-        dbContext.Users.Add(user);
-    }
-    await dbContext.SaveChangesAsync();
 
     var gameId = Guid.NewGuid();
 
@@ -137,6 +127,7 @@ app.MapPost("/setup", async (AppDbContext dbContext, GridService gridService, Ga
     var maskedJ2 = gridService.CreateMaskedGrid(gridJ2.GridArray);
 
     game.Id = gameId;
+    game.user = user;
     game.IsGameFinished = false;
     game.GridJ1 = gridJ1.GridArray;
     game.GridJ2 = gridJ2.GridArray;
@@ -207,7 +198,7 @@ app.MapPost("/start", (GridService gridService, Game game, GameHistory gameHisto
 
 
 
-app.MapPost("/tour", (GridService gridService, Game game, AI AI, GameHistory gameHistory, [FromBody] ShootRequest request, IValidator<ShootRequest> validator) =>
+app.MapPost("/tour", async (AppDbContext dbContext, GridService gridService, Game game, AI AI, GameHistory gameHistory, [FromBody] ShootRequest request, IValidator<ShootRequest> validator) =>
 {
     Console.WriteLine("\n\n\nTour du joueur");
     var gameresult = new GameShootResponse{};
@@ -224,9 +215,45 @@ app.MapPost("/tour", (GridService gridService, Game game, AI AI, GameHistory gam
     bool isHit = result.shootResultJ1.IsHit;
     bool isGameFinished = result.game.IsGameFinished;
 
-    if(!canShoot || isGameFinished){
-        return playerShootResult;
+    if (canShoot)
+    {
+        game.user.NbCoup++;
     }
+    
+
+    if(!canShoot || isGameFinished) {
+        if (isGameFinished)
+        {
+            // Récupérer l'utilisateur
+            var userRecup = await dbContext.Users.FirstOrDefaultAsync(u => u.Name == game.user.Name);
+
+            if (userRecup != null)
+            {
+                // Si le nombre de coups du jeu est inférieur, on met à jour le nombre de coups
+                if (game.user.NbCoup < userRecup.NbCoup)
+                {
+                    userRecup.NbCoup = game.user.NbCoup;
+                }
+
+                // Incrémente le nombre de victoires
+                userRecup.NbVictoire++;
+                
+                // Mise à jour de l'utilisateur existant
+                dbContext.Users.Update(userRecup);
+            }
+            else
+            {
+                // Si l'utilisateur n'existe pas, on le crée
+                game.user.NbVictoire++; // Incrémenter les victoires pour le nouveau joueur
+                dbContext.Users.Add(game.user);
+            }
+
+            // Sauvegarde les changements dans la base de données
+            await dbContext.SaveChangesAsync();
+        }
+        return playerShootResult; // Si le joueur ne peut pas tirer ou si la partie est finie
+    }
+    
     gameresult.shootResultJ1 = result.shootResultJ1;
     
 
@@ -264,17 +291,39 @@ app.MapGet("/undo", (GridService gridService, Game game, GameHistory gameHistory
     if (previousState != null)
     {
         game.SetGame(previousState);
+        game.user.NbCoup++; // Incrémenter le nombre de coups joués
     }
     game.PrintGame();
     return Results.Ok(game);
 })
 .WithOpenApi();
 
+app.MapGet("/leaderBoard", async (AppDbContext dbContext) =>
+{
+    // Récupérer tous les utilisateurs
+    var users = await dbContext.Users.ToListAsync();
 
+    // Créer et trier les listes pour le classement
+    var sortedCoupCount = users
+        .OrderBy(u => u.NbCoup)
+        .Select(u => new KeyValuePair<string, int>(u.Name, u.NbCoup))
+        .ToList();
 
+    var sortedVictoryCount = users
+        .OrderByDescending(u => u.NbVictoire)
+        .Select(u => new KeyValuePair<string, int>(u.Name, u.NbVictoire))
+        .ToList();
 
+    // Créer l'objet de réponse
+    var response = new LeaderBoardResult
+    {
+        UserCoupCount = sortedCoupCount,
+        UserVictoryCount = sortedVictoryCount
+    };
 
-
+    return Results.Ok(response);
+})
+.WithOpenApi();
 
 static IResult shoot(GridService gridService, Game game, ShootRequest request, IValidator<ShootRequest> validator)
 {

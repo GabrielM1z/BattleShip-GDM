@@ -11,3 +11,4 @@ BattleShip.Models/obj/
 BattleShip.API/users.db
 BattleShip.API/users.db-shm
 BattleShip.API/users.db-wal
+BattleShip.API/users.db
