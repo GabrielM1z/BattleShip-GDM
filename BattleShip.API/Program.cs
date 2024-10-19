@@ -251,6 +251,8 @@ app.MapPost("/tour", async (AppDbContext dbContext, GridService gridService, Gam
             // Sauvegarde les changements dans la base de données
             await dbContext.SaveChangesAsync();
         }
+        game.IsGameFinished = true;
+        gameHistory.SaveState(game);
         return playerShootResult; // Si le joueur ne peut pas tirer ou si la partie est finie
     }
     
@@ -286,15 +288,19 @@ app.MapPost("/shoot", (GridService gridService, Game game, [FromBody] ShootReque
 
 app.MapGet("/undo", (GridService gridService, Game game, GameHistory gameHistory) => 
 {
-    Console.WriteLine($"/undo");
-    GameStateHisto previousState = gameHistory.Undo();
-    if (previousState != null)
-    {
-        game.SetGame(previousState);
-        game.user.NbCoup++; // Incrémenter le nombre de coups joués
+    Console.WriteLine($"{game.IsGameFinished}");
+    if(!game.IsGameFinished){
+        Console.WriteLine($"/undo");
+        GameStateHisto previousState = gameHistory.Undo();
+        if (previousState != null)
+        {
+            game.SetGame(previousState);
+            game.user.NbCoup++; // Incrémenter le nombre de coups joués
+        }
+        game.PrintGame();
     }
-    game.PrintGame();
     return Results.Ok(game);
+    
 })
 .WithOpenApi();
 

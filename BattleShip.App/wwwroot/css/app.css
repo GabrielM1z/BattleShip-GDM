@@ -183,6 +183,7 @@ div.start{
 /* Grid */
 div.sub-title{
     text-align: center;
+    color: #9ff2fd;
 }
 
 div.grid-container{
@@ -258,19 +259,20 @@ div.logs {
     margin-right: 40px;
     width: auto;
     min-width: 200px;
-    height: auto;
-    border: #b32121 solid 2px;
+    height: 0%;
+    border: #1b6ec2 solid 1px;
     border-radius: 10px;
     overflow: hidden;
     
 
 }
 .logText{
+    margin-top: 10px;
     color: white;
     width: 100%;       /* Prend toute la largeur de la div principale */
     height: 100%;      /* Prend toute la hauteur de la div principale */
     overflow-y: auto;  /* Active le scroll vertical si le contenu dépasse */
-    border: 1px dashed blue; /* Juste pour voir la sous-div */
+    
     height: 300px;
 }
 
@@ -317,7 +319,7 @@ div.boat-fleet p{
 }
 
 div.sub-fleet>p{
-    color: white;
+    color: #9ff2fd;
     text-align: center;
     font-weight: bold;
     font-size: larger;

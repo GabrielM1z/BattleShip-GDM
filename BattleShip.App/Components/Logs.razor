@@ -24,7 +24,9 @@
 
     private async Task Undo(GameState GameState)
     {
-        GameState.Logs.RemoveAt(GameState.Logs.Count - 1);
+        if(!GameState.end){
+            GameState.Logs.RemoveAt(GameState.Logs.Count - 1);
+        }
 		// on envoie
 		var response = await Http.GetAsync("/undo");
 
