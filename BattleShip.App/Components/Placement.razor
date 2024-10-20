@@ -351,6 +351,10 @@ private char[][] MergeGrids(char[][] pregrid, char[][] grid)
     {
         for (int col = 0; col < pregrid[row].Length; col++)
         {
+			if(grid[row][col] != '\u0000' && pregrid[row][col] != '\u0000'){
+				return grid;
+			}
+
             // Si la case de grid n'est pas vide (différente de '\0')
             if (grid[row][col] != '\u0000')
             {
