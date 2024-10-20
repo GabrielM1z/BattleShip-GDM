@@ -41,7 +41,6 @@
 		<div class="start">
 			<button class="btn btn-primary btn-lg" @onclick="Menu">Menu</button>
 		</div>
-		Console.WriteLine($"coucou {GameState.pve}");
 
 		if(GameState.pve){
 			// placement des bateaux
@@ -196,7 +195,13 @@ else
 	{
 		if(GameState != null)
 		{
-			GameState.GridJ1 = null;
+			for (int i = 0; i < GameState.GridJ1.Length; i++)
+			{
+				for (int j = 0; j < GameState.GridJ1[i].Length; j++)
+				{
+					GameState.GridJ1[i][j] = '0';
+				}
+			}
 			GameState.MaskedGridJ1 = null;
 			GameState.MaskedGridJ2 = null;
 			GameState.start = false;

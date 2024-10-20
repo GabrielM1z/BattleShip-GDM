@@ -102,7 +102,7 @@ body {
 /* btn start */
 div.start{
     margin: auto;
-    margin-bottom: 30px;
+    margin-bottom: 10px;
     padding: 3px;
     text-align: center;
     border: #1bacd4 solid 3px;
@@ -475,6 +475,15 @@ div.btn-grid-container{
 }
 
 
+.boat-preview {
+    width: 50px; /* Largeur ajustée selon la taille de la grille */
+    height: 50px; /* Hauteur ajustée selon la taille de la grille */
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+}
 
 
 

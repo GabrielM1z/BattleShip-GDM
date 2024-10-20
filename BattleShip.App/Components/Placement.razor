@@ -42,26 +42,28 @@
 			<h3>Our GRID</h3>
 		</div>
 		<div class="grid-container">
-			@if (GameState != null & GameState.GridJ1 != null)
+			@if (GameState != null & GameState.GridJ1 != null & GameState.GridJ1[0][0] != '0')
 			{
 				@for (int row = 0; row < GameState.GridJ1.Length; row++)
 				{
 					var currentRow = row;
-					<div class="grid-row pos-{row}">
+					<div class="grid-row pos-@row">
 						@for (int col = 0; col < GameState.GridJ1[0].Length; col++)
 						{
 							var currentCol = col;
-							<div class="grid-item pos-{row}-{col} pos-{col}" @onclick="() => AddBoatToGrid(currentRow, currentCol, placementHorizontal)">
-								<div class="grid-item pos-{row}-{col} pos-{col}">
-									@GetImageForCell(GameState.GridJ1,GameState.MaskedGridJ1, row, col)
-								</div>
+							<div class="grid-item pos-@row-@col pos-@col"
+								@onclick="() => AddBoatToGrid(currentRow, currentCol, placementHorizontal)"
+								@onmouseover="() => PreviewBoatPlacement(currentRow, currentCol)">
+								
+								<!-- Affiche l'image du bateau, soit celle de la grille réelle, soit celle de la prévisualisation -->
+								@GetImageForCell(previewGrid, GameState.GridJ1, GameState.MaskedGridJ1, currentRow, currentCol)
 							</div>
 						}
 					</div>
 				}
 			}
 		</div>
-		
+
 		<div class="btn-grid-container">
 			<button class="btn btn-primary" @onclick="PlaceBoatsRandomly">
 				Placement Aléatoire
@@ -82,9 +84,77 @@
 	private bool clic;
 	private Boat boatSelected;
 	private bool placementHorizontal = true;
+	private int? hoverRow = null;
+	private int? hoverCol = null;
+
 
 	[Parameter]
 	public EventCallback<Models.Fleet> OnCallStart { get; set; }
+
+	public char[][] previewGrid;
+
+	protected override void OnInitialized()
+	{
+		// Créez une grille temporaire de la même taille que GameState.GridJ1
+		Console.WriteLine($"eeee{GameState.GridJ1.Length} &&&&& eee");
+		previewGrid = new char[GameState.GridJ1.Length][];
+		for (int i = 0; i < GameState.GridJ1.Length; i++)
+		{
+			previewGrid[i] = new char[GameState.GridJ1[i].Length];
+		}
+	}
+
+	private void PreviewBoatPlacement(int row, int col)
+	{
+		if (previewGrid.Length != GameState.GridJ1.Length)
+		{
+			/*for (int i = 0; i < pregrid.Length; i++)
+			{
+				pregrid[i] = grid1[i].ToArray();
+			}
+			*/
+			previewGrid = new char[GameState.GridJ1.Length][];
+			for (int i = 0; i < GameState.GridJ1.Length; i++)
+			{
+				previewGrid[i] = new char[GameState.GridJ1[i].Length];
+			}
+		}
+		// Si un bateau est sélectionné, on ajoute temporairement le bateau à la grille virtuelle
+		if (boatSelected != null)
+		{
+			// Vider la grille temporaire
+			for (int i = 0; i < previewGrid.Length; i++)
+			{
+				for (int j = 0; j < previewGrid[i].Length; j++)
+				{
+					previewGrid[i][j] = '\u0000';
+				}
+			}
+
+			// Placer le bateau dans la grille virtuelle (en fonction de l'orientation)
+			if (placementHorizontal)
+			{
+				for (int i = 0; i < boatSelected.Size; i++)
+				{
+					if (col + i < previewGrid[0].Length) // Vérifie que la case est dans la grille
+					{
+						previewGrid[row][col + i] = boatSelected.Symbol;
+					}
+				}
+			}
+			else
+			{
+				for (int i = 0; i < boatSelected.Size; i++)
+				{
+					if (row + i < previewGrid.Length) // Vérifie que la case est dans la grille
+					{
+						previewGrid[row + i][col] = boatSelected.Symbol;
+					}
+				}
+			}
+		}
+	}
+
 
 	private async Task OnButtonClicked(Models.Fleet placedBoat)
 	{
@@ -134,30 +204,52 @@
 
 
 	private void AddBoatToGrid(int row, int col, bool isHorizontal)
-    {
-		if(clic)
+	{
+		if (clic)
 		{
-			if(CanBePlaced(row, col, boatSelected.Size, isHorizontal))
+			if (CanBePlaced(row, col, boatSelected.Size, isHorizontal))
 			{
+				// Placer le bateau dans la grille
 				for (int i = 0; i < boatSelected.Size; i++)
 				{
-					if(isHorizontal)
+					if (isHorizontal)
 					{
-						GameState.GridJ1[row][col+i] = boatSelected.Symbol;
+						GameState.GridJ1[row][col + i] = boatSelected.Symbol;
 					}
-					else {
-						GameState.GridJ1[row+i][col] = boatSelected.Symbol;
+					else
+					{
+						GameState.GridJ1[row + i][col] = boatSelected.Symbol;
 					}
 				}
+
+				// Mettre à jour les coordonnées du bateau
 				boatSelected.X = col;
 				boatSelected.Y = row;
 				boatSelected.Horizontal = isHorizontal;
+
+				// Désactiver le mode de placement et le preview
 				clic = false;
+
+				// Réinitialiser la grille de prévisualisation
+				ClearPreviewGrid();
 			}
 		}
-		
-		
-    }
+	}
+
+	// Méthode pour vider la grille de prévisualisation
+	private void ClearPreviewGrid()
+	{
+		clic = false;
+		boatSelected = null;
+		for (int i = 0; i < previewGrid.Length; i++)
+		{
+			for (int j = 0; j < previewGrid[i].Length; j++)
+			{
+				previewGrid[i][j] = '\u0000'; // Effacer les bateaux du preview
+			}
+		}
+	}
+
 
 	private void DeleteBoat(Boat boat)
 	{
@@ -236,8 +328,62 @@
 
 
 
-	private MarkupString GetImageForCell(char[][] grid, bool?[][] maskeGrid, int x, int y)
+
+private char[][] MergeGrids(char[][] pregrid, char[][] grid)
+{
+    // Vérifie si les dimensions de pregrid et grid sont compatibles
+    if (pregrid.Length != grid.Length || pregrid[0].Length != grid[0].Length)
+    {
+		Console.WriteLine($"e{pregrid.Length} & e{grid.Length}");
+		return grid;
+        //throw new ArgumentException("Les dimensions des grilles ne sont pas compatibles.");
+    }
+
+    // Crée une nouvelle grille de la même taille que pregrid
+    char[][] mergedGrid = new char[pregrid.Length][];
+    for (int i = 0; i < pregrid.Length; i++)
+    {
+        mergedGrid[i] = new char[pregrid[i].Length];
+    }
+
+    // Parcours toutes les cases de la grille
+    for (int row = 0; row < pregrid.Length; row++)
+    {
+        for (int col = 0; col < pregrid[row].Length; col++)
+        {
+            // Si la case de grid n'est pas vide (différente de '\0')
+            if (grid[row][col] != '\u0000')
+            {
+                // On copie la valeur de grid dans mergedGrid
+                mergedGrid[row][col] = grid[row][col];
+            }
+            else
+            {
+                // Sinon, on copie la valeur de pregrid dans mergedGrid
+                mergedGrid[row][col] = pregrid[row][col];
+            }
+        }
+    }
+
+    // Retourne la nouvelle grille fusionnée
+    return mergedGrid;
+}
+
+
+
+	private MarkupString GetImageForCell(char[][] pregrid, char[][] grid1, bool?[][] maskeGrid, int x, int y)
 	{
+		if (pregrid.Length != grid1.Length)
+		{
+			previewGrid = new char[GameState.GridJ1.Length][];
+			for (int i = 0; i < GameState.GridJ1.Length; i++)
+			{
+				previewGrid[i] = new char[GameState.GridJ1[i].Length];
+			}
+			return new MarkupString($"<img>");
+		}
+		char[][] grid = MergeGrids(pregrid, grid1);
+
 
 		string imageUrl = "";
 		string rotationClass = "";
